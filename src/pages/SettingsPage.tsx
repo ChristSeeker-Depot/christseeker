@@ -79,9 +79,10 @@ export default function SettingsPage() {
             <User className="w-5 h-5 opacity-60" />
             <h3 className="font-bold">Profile</h3>
           </div>
-          <div className="space-y-3 text-sm mb-5" style={{ color: 'var(--text-muted)' }}>
+          <div className="space-y-2 text-sm mb-5" style={{ color: 'var(--text-muted)' }}>
             <p><strong style={{ color: 'var(--text-primary)' }}>Email:</strong> {user?.email}</p>
             <p><strong style={{ color: 'var(--text-primary)' }}>Tradition:</strong> {profile?.denomination}</p>
+            {profile?.church_name && <p><strong style={{ color: 'var(--text-primary)' }}>Church:</strong> {profile.church_name}</p>}
             <p><strong style={{ color: 'var(--text-primary)' }}>Daily Streak:</strong> 🔥 {profile?.streak ?? 0} days</p>
           </div>
           <label className="block text-sm font-medium mb-1" style={{ color: 'var(--text-primary)' }}>Display Name</label>

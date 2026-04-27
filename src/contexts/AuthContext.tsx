@@ -5,6 +5,7 @@ import { supabase } from '../lib/supabase';
 export interface UserProfile {
   id: string;
   denomination: string;
+  church_name: string | null;
   display_name: string | null;
   theme: 'light' | 'dark' | 'parchment';
   font_size: 'sm' | 'base' | 'lg';
