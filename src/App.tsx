@@ -9,18 +9,21 @@ import SettingsPage from './pages/SettingsPage';
 import JournalPage from './pages/JournalPage';
 import ScripturePage from './pages/ScripturePage';
 import BreathPrayerPage from './pages/BreathPrayerPage';
+import PrayerWallPage from './pages/PrayerWallPage';
+import SermonNotesPage from './pages/SermonNotesPage';
+import SermonLivePage from './pages/SermonLivePage';
+import DevotionalPage from './pages/DevotionalPage';
+import ReadingPlansPage from './pages/ReadingPlansPage';
 
 /** Applies theme and font-size data attributes to <html> based on user profile */
 function ThemeApplier() {
   const { profile } = useAuth();
-
   useEffect(() => {
     const theme = profile?.theme ?? 'light';
     const fontSize = profile?.font_size ?? 'base';
     document.documentElement.setAttribute('data-theme', theme);
     document.documentElement.setAttribute('data-fontsize', fontSize);
   }, [profile]);
-
   return null;
 }
 
@@ -55,6 +58,11 @@ function AppRoutes() {
       <Route path="/journal" element={<ProtectedRoute><JournalPage /></ProtectedRoute>} />
       <Route path="/scripture" element={<ProtectedRoute><ScripturePage /></ProtectedRoute>} />
       <Route path="/breath" element={<ProtectedRoute><BreathPrayerPage /></ProtectedRoute>} />
+      <Route path="/prayer-wall" element={<ProtectedRoute><PrayerWallPage /></ProtectedRoute>} />
+      <Route path="/sermon-notes" element={<ProtectedRoute><SermonNotesPage /></ProtectedRoute>} />
+      <Route path="/sermon-live" element={<ProtectedRoute><SermonLivePage /></ProtectedRoute>} />
+      <Route path="/devotional" element={<ProtectedRoute><DevotionalPage /></ProtectedRoute>} />
+      <Route path="/plans" element={<ProtectedRoute><ReadingPlansPage /></ProtectedRoute>} />
     </Routes>
   );
 }

@@ -1,9 +1,23 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { Link } from 'react-router-dom';
-import { BookOpen, MessageCircle, Music, LogOut, Settings, X, RefreshCw, BookMarked, Search, Wind } from 'lucide-react';
+import { BookOpen, MessageCircle, Music, LogOut, Settings, X, RefreshCw, BookMarked, Search, Wind, Heart, BookOpenCheck, Mic, Sparkles, ListChecks } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { getDailyIndex, VERSES, PRAYER_GUIDES, SONGS } from '../data/spiritualData';
+
+const ToolCard = ({ to, icon: Icon, title, desc, delay = 0, span = '' }: { to: string; icon: any; title: string; desc: string; delay?: number; span?: string }) => (
+  <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay }} className={span}>
+    <Link to={to} className="block h-full">
+      <motion.div whileTap={{ scale: 0.96 }} className="glass-panel p-5 rounded-3xl h-full border-2 border-transparent hover:border-[var(--accent)]/20 transition-all group cursor-pointer">
+        <div className="w-10 h-10 rounded-full flex items-center justify-center mb-3 group-hover:scale-110 transition-transform" style={{ background: 'var(--bg-card)', border: '1px solid var(--bg-card-border)' }}>
+          <Icon className="w-5 h-5" style={{ color: 'var(--accent)' }} />
+        </div>
+        <p className="font-semibold text-sm">{title}</p>
+        <p className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>{desc}</p>
+      </motion.div>
+    </Link>
+  </motion.div>
+);
 
 export default function DashboardPage() {
   const { profile, signOut } = useAuth();
@@ -42,29 +56,17 @@ export default function DashboardPage() {
           {displayName && <p className="text-sm opacity-60 mt-0.5">Peace to you, {displayName}</p>}
         </div>
         <div className="flex items-center gap-3">
-          {/* Streak badge */}
-          <div className="flex items-center gap-1 px-3 py-1.5 rounded-full text-sm font-semibold glass-panel">
-            🔥 {streak}
-          </div>
-          <Link to="/settings">
-            <motion.div whileTap={{ scale: 0.90 }} className="p-2 opacity-70 hover:opacity-100 transition-opacity">
-              <Settings className="w-5 h-5" />
-            </motion.div>
-          </Link>
-          <motion.button whileTap={{ scale: 0.90 }} onClick={signOut} className="p-2 opacity-70 hover:opacity-100 transition-opacity">
-            <LogOut className="w-5 h-5" />
-          </motion.button>
+          <div className="flex items-center gap-1 px-3 py-1.5 rounded-full text-sm font-semibold glass-panel">🔥 {streak}</div>
+          <Link to="/settings"><motion.div whileTap={{ scale: 0.90 }} className="p-2 opacity-70 hover:opacity-100 transition-opacity"><Settings className="w-5 h-5" /></motion.div></Link>
+          <motion.button whileTap={{ scale: 0.90 }} onClick={signOut} className="p-2 opacity-70 hover:opacity-100 transition-opacity"><LogOut className="w-5 h-5" /></motion.button>
         </div>
       </header>
 
       <div className="space-y-5">
         {/* Verse of the Day */}
-        <motion.div
-          className="glass-panel p-8 rounded-3xl text-center cursor-pointer border-2 border-transparent hover:border-[var(--accent)]/20 transition-all"
+        <motion.div className="glass-panel p-8 rounded-3xl text-center cursor-pointer border-2 border-transparent hover:border-[var(--accent)]/20 transition-all"
           initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}
-          whileTap={{ scale: 0.98 }}
-          onClick={() => setModalContent('verse')}
-        >
+          whileTap={{ scale: 0.98 }} onClick={() => setModalContent('verse')}>
           <p className="text-xs uppercase tracking-widest mb-4" style={{ color: 'var(--text-muted)' }}>Verse of the Day</p>
           <h2 className="text-2xl md:text-3xl font-serif italic mb-4">"{verse.text}"</h2>
           <p className="font-medium">— {verse.reference}</p>
@@ -97,12 +99,9 @@ export default function DashboardPage() {
           </motion.div>
 
           {/* Today's Worship */}
-          <motion.div
-            className="glass-panel p-6 rounded-3xl cursor-pointer border-2 border-transparent hover:border-[var(--accent)]/20 transition-all"
+          <motion.div className="glass-panel p-6 rounded-3xl cursor-pointer border-2 border-transparent hover:border-[var(--accent)]/20 transition-all"
             initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }}
-            whileTap={{ scale: 0.98 }}
-            onClick={() => setModalContent('song')}
-          >
+            whileTap={{ scale: 0.98 }} onClick={() => setModalContent('song')}>
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-4">
                 <div className="w-12 h-12 rounded-full flex items-center justify-center" style={{ background: 'var(--bg-card)', border: '1px solid var(--bg-card-border)' }}>
@@ -118,58 +117,37 @@ export default function DashboardPage() {
             </div>
           </motion.div>
 
-          {/* Tools Row */}
+          {/* Tools Grid */}
           <motion.div className="grid grid-cols-2 gap-3" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
-            <Link to="/journal">
-              <motion.div whileTap={{ scale: 0.95 }} className="glass-panel p-5 rounded-3xl h-full border-2 border-transparent hover:border-[var(--accent)]/20 transition-all group cursor-pointer">
-                <div className="w-10 h-10 rounded-full flex items-center justify-center mb-3 group-hover:scale-110 transition-transform" style={{ background: 'var(--bg-card)', border: '1px solid var(--bg-card-border)' }}>
-                  <BookMarked className="w-5 h-5" style={{ color: 'var(--accent)' }} />
-                </div>
-                <p className="font-semibold text-sm">Prayer Journal</p>
-                <p className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>Write your prayers</p>
-              </motion.div>
-            </Link>
-            <Link to="/scripture">
-              <motion.div whileTap={{ scale: 0.95 }} className="glass-panel p-5 rounded-3xl h-full border-2 border-transparent hover:border-[var(--accent)]/20 transition-all group cursor-pointer">
-                <div className="w-10 h-10 rounded-full flex items-center justify-center mb-3 group-hover:scale-110 transition-transform" style={{ background: 'var(--bg-card)', border: '1px solid var(--bg-card-border)' }}>
-                  <Search className="w-5 h-5" style={{ color: 'var(--accent)' }} />
-                </div>
-                <p className="font-semibold text-sm">Scripture Search</p>
-                <p className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>Look up any passage</p>
-              </motion.div>
-            </Link>
-            <Link to="/breath" className="col-span-2">
-              <motion.div whileTap={{ scale: 0.95 }} className="glass-panel p-5 rounded-3xl flex items-center gap-4 border-2 border-transparent hover:border-[var(--accent)]/20 transition-all group cursor-pointer">
-                <div className="w-10 h-10 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform shrink-0" style={{ background: 'var(--bg-card)', border: '1px solid var(--bg-card-border)' }}>
-                  <Wind className="w-5 h-5" style={{ color: 'var(--accent)' }} />
-                </div>
-                <div>
-                  <p className="font-semibold text-sm">Breath Prayer</p>
-                  <p className="text-xs" style={{ color: 'var(--text-muted)' }}>A guided moment of stillness</p>
-                </div>
-              </motion.div>
-            </Link>
+            <ToolCard to="/journal" icon={BookMarked} title="Prayer Journal" desc="Write your prayers" delay={0.31} />
+            <ToolCard to="/scripture" icon={Search} title="Scripture" desc="Look up any passage" delay={0.32} />
+            <ToolCard to="/breath" icon={Wind} title="Breath Prayer" desc="A moment of stillness" delay={0.33} />
+            <ToolCard to="/devotional" icon={Sparkles} title="Devotional" desc="AI-personalised today" delay={0.34} />
           </motion.div>
+        </div>
+
+        {/* Second row — community & church tools */}
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-widest mb-3" style={{ color: 'var(--text-muted)' }}>Community & Church</p>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            <ToolCard to="/prayer-wall" icon={Heart} title="Prayer Wall" desc="Pray for others" delay={0.4} />
+            <ToolCard to="/plans" icon={ListChecks} title="Reading Plans" desc="Structured Bible study" delay={0.42} />
+            <ToolCard to="/sermon-notes" icon={BookOpenCheck} title="Sermon Notes" desc="Structured note-taking" delay={0.44} />
+            <ToolCard to="/sermon-live" icon={Mic} title="Live Tools" desc="Subtitles & AI notes" delay={0.46} />
+          </div>
         </div>
       </div>
 
       {/* Modals */}
       <AnimatePresence>
         {modalContent && (
-          <motion.div
-            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
             className="fixed inset-0 z-50 flex items-center justify-center p-4 backdrop-blur-sm"
-            style={{ background: 'rgba(0,0,0,0.3)' }}
-            onClick={() => setModalContent(null)}
-          >
-            <motion.div
-              initial={{ scale: 0.95, opacity: 0, y: 20 }}
-              animate={{ scale: 1, opacity: 1, y: 0 }}
-              exit={{ scale: 0.95, opacity: 0, y: 20 }}
+            style={{ background: 'rgba(0,0,0,0.3)' }} onClick={() => setModalContent(null)}>
+            <motion.div initial={{ scale: 0.95, opacity: 0, y: 20 }} animate={{ scale: 1, opacity: 1, y: 0 }} exit={{ scale: 0.95, opacity: 0, y: 20 }}
               onClick={e => e.stopPropagation()}
               className="w-full max-w-lg rounded-3xl p-6 shadow-2xl relative max-h-[80vh] flex flex-col"
-              style={{ background: 'var(--bg-primary)', border: '1px solid var(--bg-card-border)' }}
-            >
+              style={{ background: 'var(--bg-primary)', border: '1px solid var(--bg-card-border)' }}>
               <button onClick={() => setModalContent(null)} className="absolute top-4 right-4 p-2 opacity-50 hover:opacity-100 rounded-full" style={{ background: 'var(--bg-card)' }}>
                 <X className="w-5 h-5" />
               </button>
