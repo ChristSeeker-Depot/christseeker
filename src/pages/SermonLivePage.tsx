@@ -34,6 +34,7 @@ export default function SermonLivePage() {
   const previousTranscriptRef = useRef('');
   const autoNotesRef = useRef(false);
   const subtitleRef = useRef<HTMLDivElement>(null);
+  const isListeningRef = useRef(false);
 
   useEffect(() => {
     const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -65,11 +66,20 @@ export default function SermonLivePage() {
       // Auto-scroll subtitles
       if (subtitleRef.current) subtitleRef.current.scrollTop = subtitleRef.current.scrollHeight;
     };
-    recognition.onerror = () => { setIsListening(false); };
+    recognition.onerror = (event: any) => { 
+      console.error('Speech recognition error:', event.error);
+      if (event.error === 'not-allowed' || event.error === 'service-not-allowed' || event.error === 'network') {
+        setIsListening(false); 
+        isListeningRef.current = false;
+        alert('Microphone access failed. Please ensure you are using Google Chrome, Safari, or Microsoft Edge. Some browsers like Opera GX or Brave do not support this feature.');
+      }
+    };
     recognition.onend = () => { 
-      if (isListening) {
+      if (isListeningRef.current) {
         previousTranscriptRef.current = transcriptRef.current;
-        recognition.start(); 
+        try {
+          recognition.start(); 
+        } catch (e) {}
       }
     };
     recognitionRef.current = recognition;
@@ -86,6 +96,7 @@ export default function SermonLivePage() {
     setFullTranscript('');
     setSummary('');
     setIsListening(true);
+    isListeningRef.current = true;
     try {
       recognitionRef.current?.start();
     } catch (e) {
@@ -95,6 +106,7 @@ export default function SermonLivePage() {
 
   const stopListening = () => {
     setIsListening(false);
+    isListeningRef.current = false;
     recognitionRef.current?.abort();
     setInterimText('');
     // Trigger summary for Note Taker mode OR subtitle mode with autoNotes enabled
