@@ -8,7 +8,7 @@ import puppeteer from 'puppeteer';
   page.on('response', response => console.log('RESPONSE:', response.url(), response.status()));
   page.on('requestfailed', request => console.log('REQUEST FAILED:', request.url(), request.failure().errorText));
   
-  await page.goto('http://localhost:5173/christseeker/', { waitUntil: 'networkidle0' });
+  await page.goto('http://localhost:5173/', { waitUntil: 'networkidle0' });
   const content = await page.content();
   console.log('HTML CONTENT:', content.substring(0, 1000));
   await browser.close();

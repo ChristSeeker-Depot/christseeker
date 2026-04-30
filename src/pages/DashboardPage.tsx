@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { Link } from 'react-router-dom';
-import { BookOpen, MessageCircle, Music, LogOut, Settings, X, RefreshCw, BookMarked, Search, Wind, Heart, BookOpenCheck, Mic, Sparkles, ListChecks } from 'lucide-react';
+import { BookOpen, MessageCircle, Music, LogOut, Settings, X, RefreshCw, BookMarked, Search, Wind, Heart, BookOpenCheck, Mic, Sparkles, ListChecks, Shield } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { getDailyIndex, VERSES, PRAYER_GUIDES, SONGS } from '../data/spiritualData';
 
@@ -123,6 +123,7 @@ export default function DashboardPage() {
             <ToolCard to="/scripture" icon={Search} title="Scripture" desc="Look up any passage" delay={0.32} />
             <ToolCard to="/breath" icon={Wind} title="Breath Prayer" desc="A moment of stillness" delay={0.33} />
             <ToolCard to="/devotional" icon={Sparkles} title="Devotional" desc="AI-personalised today" delay={0.34} />
+            <ToolCard to="/stronghold" icon={Shield} title="Stronghold Buster" desc="Overcome struggles" delay={0.35} span="col-span-2" />
           </motion.div>
         </div>
 
