@@ -76,15 +76,7 @@ export default function SermonLivePage() {
     return () => { recognition.abort(); };
   }, []);
 
-  const startListening = async (selectedMode: 'subtitles' | 'notetaker') => {
-    try {
-      await navigator.mediaDevices.getUserMedia({ audio: true });
-    } catch (err) {
-      console.error('Microphone access denied', err);
-      alert('Please allow microphone access to use this feature.');
-      return;
-    }
-
+  const startListening = (selectedMode: 'subtitles' | 'notetaker') => {
     autoNotesRef.current = selectedMode === 'subtitles' ? autoNotes : false;
     setMode(selectedMode);
     setFinalLines([]);
@@ -108,6 +100,8 @@ export default function SermonLivePage() {
     // Trigger summary for Note Taker mode OR subtitle mode with autoNotes enabled
     if ((mode === 'notetaker' || autoNotesRef.current) && transcriptRef.current.trim()) {
       handleSummarise();
+    } else {
+      setMode('idle');
     }
   };
 
