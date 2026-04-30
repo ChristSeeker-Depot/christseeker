@@ -27,8 +27,11 @@ export default function SermonLivePage() {
   const [saving, setSaving] = useState(false);
   const [savedMsg, setSavedMsg] = useState(false);
   const [supported, setSupported] = useState(true);
+  /** When true, subtitle mode also generates AI notes on stop */
+  const [autoNotes, setAutoNotes] = useState(false);
   const recognitionRef = useRef<any>(null);
   const transcriptRef = useRef('');
+  const autoNotesRef = useRef(false);
   const subtitleRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -62,6 +65,7 @@ export default function SermonLivePage() {
   }, []);
 
   const startListening = (selectedMode: 'subtitles' | 'notetaker') => {
+    autoNotesRef.current = selectedMode === 'subtitles' ? autoNotes : false;
     setMode(selectedMode);
     setFinalLines([]);
     setInterimText('');
@@ -76,7 +80,8 @@ export default function SermonLivePage() {
     setIsListening(false);
     recognitionRef.current?.abort();
     setInterimText('');
-    if (mode === 'notetaker' && fullTranscript) {
+    // Trigger summary for Note Taker mode OR subtitle mode with autoNotes enabled
+    if ((mode === 'notetaker' || autoNotesRef.current) && transcriptRef.current.trim()) {
       handleSummarise();
     }
   };
@@ -143,21 +148,42 @@ export default function SermonLivePage() {
           <div className="text-center mb-2">
             <p className="opacity-60 text-sm">Select a tool to use during your service</p>
           </div>
-          <motion.button whileTap={{ scale: 0.97 }} onClick={() => startListening('subtitles')}
-            className="glass-panel p-8 rounded-3xl text-left border-2 border-transparent hover:border-[var(--accent)]/30 transition-all group">
-            <div className="w-14 h-14 rounded-full flex items-center justify-center mb-4 group-hover:scale-110 transition-transform" style={{ background: 'var(--accent)' }}>
-              <FileText className="w-7 h-7 text-white" />
+
+          {/* Subtitle card with Auto-Notes toggle */}
+          <div className="glass-panel p-8 rounded-3xl border-2 border-transparent hover:border-[var(--accent)]/30 transition-all">
+            <div className="flex items-start gap-5">
+              <div className="w-14 h-14 rounded-full flex items-center justify-center shrink-0" style={{ background: 'var(--accent)' }}>
+                <FileText className="w-7 h-7 text-white" />
+              </div>
+              <div className="flex-1">
+                <h2 className="text-xl font-bold mb-1">Live Subtitles</h2>
+                <p className="text-sm opacity-60 mb-5">Real-time, large-text captions. Ideal for deaf or hard-of-hearing churchgoers.</p>
+                {/* Auto-notes toggle */}
+                <label className="flex items-center justify-between gap-3 p-3 rounded-xl mb-4 cursor-pointer" style={{ background: 'var(--bg-card)', border: '1px solid var(--bg-card-border)' }}>
+                  <div>
+                    <p className="text-sm font-semibold flex items-center gap-1.5"><Brain className="w-4 h-4" style={{ color: 'var(--accent)' }} /> Auto-generate notes</p>
+                    <p className="text-xs opacity-50 mt-0.5">AI summarises the sermon when you stop</p>
+                  </div>
+                  <div onClick={() => setAutoNotes(n => !n)}
+                    className={`w-11 h-6 rounded-full relative transition-colors shrink-0 cursor-pointer ${autoNotes ? 'bg-[var(--accent)]' : 'bg-gray-300'}`}>
+                    <div className={`absolute top-1 w-4 h-4 bg-white rounded-full shadow transition-transform ${autoNotes ? 'translate-x-6' : 'translate-x-1'}`} />
+                  </div>
+                </label>
+                <motion.button whileTap={{ scale: 0.96 }} onClick={() => startListening('subtitles')}
+                  className="w-full py-3 rounded-xl text-white font-medium text-sm" style={{ background: 'var(--accent)' }}>
+                  Start Subtitles{autoNotes ? ' + Notes' : ''}
+                </motion.button>
+              </div>
             </div>
-            <h2 className="text-xl font-bold mb-2">Live Subtitles</h2>
-            <p className="text-sm opacity-60">Real-time, large-text captions of the sermon. Ideal for deaf or hard-of-hearing churchgoers. Keep your screen on and follow along.</p>
-          </motion.button>
+          </div>
+
           <motion.button whileTap={{ scale: 0.97 }} onClick={() => startListening('notetaker')}
             className="glass-panel p-8 rounded-3xl text-left border-2 border-transparent hover:border-[var(--accent)]/30 transition-all group">
             <div className="w-14 h-14 rounded-full flex items-center justify-center mb-4 group-hover:scale-110 transition-transform" style={{ background: 'var(--bg-card)', border: '1px solid var(--bg-card-border)' }}>
               <Brain className="w-7 h-7" style={{ color: 'var(--accent)' }} />
             </div>
             <h2 className="text-xl font-bold mb-2">AI Note Taker</h2>
-            <p className="text-sm opacity-60">Place your phone down, let it listen. When you stop, Gemini AI will generate a structured summary of the sermon with key points and application.</p>
+            <p className="text-sm opacity-60">Place your phone down, let it listen. When you stop, Gemini AI will generate a structured summary with key points and application.</p>
           </motion.button>
         </motion.div>
       )}
@@ -165,6 +191,18 @@ export default function SermonLivePage() {
       {/* Subtitles view */}
       {mode === 'subtitles' && (
         <div className="flex-1 flex flex-col">
+          {/* Status bar */}
+          <div className="flex items-center justify-between mb-3 px-1">
+            <div className="flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-red-400 animate-pulse" />
+              <span className="text-xs opacity-50">Live</span>
+            </div>
+            {autoNotes && (
+              <span className="text-xs flex items-center gap-1" style={{ color: 'var(--accent)' }}>
+                <Brain className="w-3.5 h-3.5" /> {fullTranscript.split(' ').filter(Boolean).length} words · notes on
+              </span>
+            )}
+          </div>
           <div ref={subtitleRef} className="flex-1 overflow-y-auto glass-panel rounded-3xl p-6 mb-6 space-y-3" style={{ minHeight: '300px', maxHeight: '55vh' }}>
             {finalLines.map((line, i) => (
               <p key={i} className="text-2xl md:text-3xl font-bold leading-tight">{line}</p>
@@ -176,7 +214,7 @@ export default function SermonLivePage() {
             <motion.button whileTap={{ scale: 0.95 }} onClick={stopListening}
               className="flex items-center gap-3 px-8 py-4 rounded-2xl font-semibold text-white shadow-xl"
               style={{ background: '#e53e3e' }}>
-              <MicOff className="w-5 h-5" /> Stop Listening
+              <MicOff className="w-5 h-5" /> {autoNotes ? 'Stop & Generate Notes' : 'Stop Listening'}
             </motion.button>
           </div>
         </div>
