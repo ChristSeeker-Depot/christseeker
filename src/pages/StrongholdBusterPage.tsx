@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowLeft, Shield, CheckCircle2, ChevronRight, Loader2, Save } from 'lucide-react';
+import { ArrowLeft, Shield, ChevronRight, Loader2, Save } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
@@ -35,7 +35,7 @@ const STRONGHOLDS: Stronghold[] = [
       { ref: 'Philippians 4:6-7', text: 'Do not be anxious about anything, but in every situation, by prayer and petition, with thanksgiving, present your requests to God. And the peace of God, which transcends all understanding, will guard your hearts and your minds in Christ Jesus.' },
       { ref: '2 Timothy 1:7', text: 'For the Spirit God gave us does not make us timid, but gives us power, love and self-discipline.' }
     ],
-    prayer: 'Father, my mind is racing and my heart is heavy with fear. I bring all my 'what-ifs' and worst-case scenarios to the foot of the cross right now. I renounce the spirit of fear and anxiety over my life. I declare that You are in control of my future. Fill me with Your perfect peace that makes no sense to the world. Guard my mind today. I choose to trust You. In Jesus\' name, Amen.',
+    prayer: 'Father, my mind is racing and my heart is heavy with fear. I bring all my \'what-ifs\' and worst-case scenarios to the foot of the cross right now. I renounce the spirit of fear and anxiety over my life. I declare that You are in control of my future. Fill me with Your perfect peace that makes no sense to the world. Guard my mind today. I choose to trust You. In Jesus\' name, Amen.',
   },
   {
     id: 'pride',

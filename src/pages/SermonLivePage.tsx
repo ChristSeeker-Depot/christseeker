@@ -31,6 +31,7 @@ export default function SermonLivePage() {
   const [autoNotes, setAutoNotes] = useState(false);
   const recognitionRef = useRef<any>(null);
   const transcriptRef = useRef('');
+  const previousTranscriptRef = useRef('');
   const autoNotesRef = useRef(false);
   const subtitleRef = useRef<HTMLDivElement>(null);
 
@@ -43,37 +44,61 @@ export default function SermonLivePage() {
     recognition.lang = 'en-GB';
     recognition.onresult = (event: any) => {
       let interim = '';
-      for (let i = event.resultIndex; i < event.results.length; i++) {
+      let currentSessionFinal = '';
+      for (let i = 0; i < event.results.length; i++) {
         const result = event.results[i];
         if (result.isFinal) {
-          const text = result[0].transcript.trim();
-          setFinalLines(prev => [...prev, text]);
-          transcriptRef.current += ' ' + text;
-          setFullTranscript(transcriptRef.current.trim());
+          currentSessionFinal += result[0].transcript.trim() + ' ';
         } else {
           interim += result[0].transcript;
         }
       }
+      
+      const fullSessionText = (previousTranscriptRef.current + ' ' + currentSessionFinal).trim();
+      const lines = fullSessionText.match(/[^.!?]+[.!?]+/g) || [fullSessionText];
+      
+      setFinalLines(lines.slice(-3).map(l => l.trim()).filter(Boolean));
+      transcriptRef.current = fullSessionText;
+      setFullTranscript(fullSessionText);
       setInterimText(interim);
+      
       // Auto-scroll subtitles
       if (subtitleRef.current) subtitleRef.current.scrollTop = subtitleRef.current.scrollHeight;
     };
     recognition.onerror = () => { setIsListening(false); };
-    recognition.onend = () => { if (isListening) recognition.start(); };
+    recognition.onend = () => { 
+      if (isListening) {
+        previousTranscriptRef.current = transcriptRef.current;
+        recognition.start(); 
+      }
+    };
     recognitionRef.current = recognition;
     return () => { recognition.abort(); };
   }, []);
 
-  const startListening = (selectedMode: 'subtitles' | 'notetaker') => {
+  const startListening = async (selectedMode: 'subtitles' | 'notetaker') => {
+    try {
+      await navigator.mediaDevices.getUserMedia({ audio: true });
+    } catch (err) {
+      console.error('Microphone access denied', err);
+      alert('Please allow microphone access to use this feature.');
+      return;
+    }
+
     autoNotesRef.current = selectedMode === 'subtitles' ? autoNotes : false;
     setMode(selectedMode);
     setFinalLines([]);
     setInterimText('');
     transcriptRef.current = '';
+    previousTranscriptRef.current = '';
     setFullTranscript('');
     setSummary('');
     setIsListening(true);
-    recognitionRef.current?.start();
+    try {
+      recognitionRef.current?.start();
+    } catch (e) {
+      // Ignore if already started
+    }
   };
 
   const stopListening = () => {
@@ -190,31 +215,30 @@ export default function SermonLivePage() {
 
       {/* Subtitles view */}
       {mode === 'subtitles' && (
-        <div className="flex-1 flex flex-col">
+        <div className="fixed inset-0 z-50 flex flex-col bg-black text-white p-6 pb-24 md:p-12">
           {/* Status bar */}
-          <div className="flex items-center justify-between mb-3 px-1">
-            <div className="flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-red-400 animate-pulse" />
-              <span className="text-xs opacity-50">Live</span>
+          <div className="flex items-center justify-between mb-8">
+            <div className="flex items-center gap-3">
+              <span className="w-4 h-4 rounded-full bg-red-500 animate-pulse shadow-[0_0_15px_rgba(239,68,68,0.7)]" />
+              <span className="text-sm md:text-base font-bold tracking-widest uppercase opacity-70">Live Transcript</span>
             </div>
             {autoNotes && (
-              <span className="text-xs flex items-center gap-1" style={{ color: 'var(--accent)' }}>
-                <Brain className="w-3.5 h-3.5" /> {fullTranscript.split(' ').filter(Boolean).length} words · notes on
+              <span className="text-sm font-bold flex items-center gap-2 text-gray-400">
+                <Brain className="w-4 h-4" /> Notes Active
               </span>
             )}
           </div>
-          <div ref={subtitleRef} className="flex-1 overflow-y-auto glass-panel rounded-3xl p-6 mb-6 space-y-3" style={{ minHeight: '300px', maxHeight: '55vh' }}>
+          <div ref={subtitleRef} className="flex-1 overflow-y-auto space-y-8 scroll-smooth pb-10">
             {finalLines.map((line, i) => (
-              <p key={i} className="text-2xl md:text-3xl font-bold leading-tight">{line}</p>
+              <p key={i} className="text-4xl md:text-6xl font-extrabold leading-tight text-white">{line}</p>
             ))}
-            {interimText && <p className="text-2xl md:text-3xl font-bold leading-tight opacity-40">{interimText}</p>}
-            {finalLines.length === 0 && !interimText && <p className="opacity-30 text-lg">Listening… speak near the device.</p>}
+            {interimText && <p className="text-4xl md:text-6xl font-extrabold leading-tight text-yellow-400">{interimText}</p>}
+            {finalLines.length === 0 && !interimText && <p className="opacity-30 text-3xl font-bold">Listening... speak into the microphone.</p>}
           </div>
-          <div className="flex justify-center">
+          <div className="absolute bottom-8 left-0 right-0 flex justify-center px-6">
             <motion.button whileTap={{ scale: 0.95 }} onClick={stopListening}
-              className="flex items-center gap-3 px-8 py-4 rounded-2xl font-semibold text-white shadow-xl"
-              style={{ background: '#e53e3e' }}>
-              <MicOff className="w-5 h-5" /> {autoNotes ? 'Stop & Generate Notes' : 'Stop Listening'}
+              className="flex items-center gap-3 px-10 py-5 rounded-full font-bold text-white shadow-2xl bg-gray-900 border border-gray-800 hover:bg-gray-800 transition-colors text-lg">
+              <MicOff className="w-6 h-6 text-red-500" /> {autoNotes ? 'Stop & Generate Notes' : 'Stop Listening'}
             </motion.button>
           </div>
         </div>
