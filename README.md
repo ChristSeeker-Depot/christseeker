@@ -1,73 +1,80 @@
-# React + TypeScript + Vite
+# ✝️ ChristSeeker
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+**ChristSeeker** is a state-of-the-art digital companion designed to bridge the gap between technology and faith. Built for modern churchgoers, it provides a suite of AI-powered tools to enhance the sermon experience, deepen personal study, and foster spiritual growth.
 
-Currently, two official plugins are available:
+🌐 **Live Site:** [christseeker.uk](https://christseeker.uk)
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+---
 
-## React Compiler
+## ✨ Key Features
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+### 🎙️ Sermon Live Tools
+*   **Real-time Subtitles:** Large-format, high-contrast captions for live sermons, specifically designed for the deaf and hard-of-hearing community.
+*   **AI Note Taker:** Leveraging Gemini AI to listen to live sermons and generate structured summaries, key points, and practical applications automatically.
 
-## Expanding the ESLint configuration
+### 🤖 AI Spiritual Companion
+*   **Theological Chat:** A smart assistant capable of discussing scripture and theology from various denominational perspectives (Non-Denominational, Baptist, Catholic, etc.).
+*   **Devotional Guidance:** Generate personalized devotionals based on your current feelings or specific scripture passages.
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+### 📝 Spiritual Discipline Tools
+*   **Journaling:** A dedicated space to save AI-generated sermon notes and personal reflections.
+*   **Prayer Wall:** A communal space to share and support one another in prayer.
+*   **Breath Prayers:** Interactive, calming tools for meditative prayer and stress relief.
+*   **Stronghold Buster:** Specialized guidance for overcoming spiritual and personal challenges.
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+### 📖 Scripture & Study
+*   **Reading Plans:** Structured plans to help you stay consistent in the Word.
+*   **Scripture Exploration:** A modern interface for reading and interacting with the Bible.
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+---
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+## 🛠️ Tech Stack
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+*   **Frontend:** React 18, TypeScript, Vite
+*   **Styling:** Tailwind CSS, Framer Motion (Animations), Lucide React (Icons)
+*   **Backend & Auth:** Supabase (PostgreSQL, Auth, Edge Functions)
+*   **AI Engine:** Google Gemini (via Supabase Edge Functions)
+*   **Accessibility:** ARIA-compliant design with high-contrast themes.
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+---
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+## 🚀 Getting Started
+
+### Prerequisites
+- Node.js (v18+)
+- npm or yarn
+- A Supabase project with Edge Functions enabled
+
+### Installation
+
+1.  **Clone the repo:**
+    ```bash
+    git clone https://github.com/ChristSeeker-Depot/christseeker.git
+    ```
+
+2.  **Install dependencies:**
+    ```bash
+    npm install
+    ```
+
+3.  **Environment Setup:**
+    Create a `.env` file in the root and add your Supabase credentials:
+    ```env
+    VITE_SUPABASE_URL=your_supabase_url
+    VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
+    ```
+
+4.  **Run locally:**
+    ```bash
+    npm run dev
+    ```
+
+---
+
+## 🛡️ License
+
+Distributed under the MIT License. See `LICENSE` for more information.
+
+---
+
+Built with ❤️ for the Body of Christ.
