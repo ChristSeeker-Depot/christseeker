@@ -36,13 +36,14 @@ export default function SermonLivePage() {
   const subtitleRef = useRef<HTMLDivElement>(null);
   const isListeningRef = useRef(false);
 
-  useEffect(() => {
+  const initRecognition = useCallback(() => {
     const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-    if (!SR) { setSupported(false); return; }
+    if (!SR) return null;
     const recognition = new SR();
     recognition.continuous = true;
     recognition.interimResults = true;
     recognition.lang = 'en-GB';
+
     recognition.onresult = (event: any) => {
       let interim = '';
       let currentSessionFinal = '';
@@ -63,27 +64,46 @@ export default function SermonLivePage() {
       setFullTranscript(fullSessionText);
       setInterimText(interim);
       
-      // Auto-scroll subtitles
       if (subtitleRef.current) subtitleRef.current.scrollTop = subtitleRef.current.scrollHeight;
     };
+
     recognition.onerror = (event: any) => { 
       console.error('Speech recognition error:', event.error);
-      if (event.error === 'not-allowed' || event.error === 'service-not-allowed' || event.error === 'network') {
+      if (['not-allowed', 'service-not-allowed', 'network'].includes(event.error)) {
         setIsListening(false); 
         isListeningRef.current = false;
-        alert('Microphone access failed. Please ensure you are using Google Chrome, Safari, or Microsoft Edge. Some browsers like Opera GX or Brave do not support this feature.');
+        alert('Microphone access failed. Please ensure you are using Google Chrome, Safari, or Microsoft Edge.');
       }
     };
+
     recognition.onend = () => { 
       if (isListeningRef.current) {
         previousTranscriptRef.current = transcriptRef.current;
-        try {
-          recognition.start(); 
-        } catch (e) {}
+        // Small delay before restarting helps clear browser audio buffers 
+        // and prevents the "weird noise" (beeping) from rapid restarts.
+        setTimeout(() => {
+          if (isListeningRef.current) {
+            try {
+              recognitionRef.current = initRecognition();
+              recognitionRef.current?.start();
+            } catch (e) {
+              console.error('Failed to restart recognition:', e);
+            }
+          }
+        }, 400);
       }
     };
-    recognitionRef.current = recognition;
-    return () => { recognition.abort(); };
+
+    return recognition;
+  }, []);
+
+  useEffect(() => {
+    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SR) { setSupported(false); return; }
+    return () => { 
+      isListeningRef.current = false;
+      recognitionRef.current?.abort(); 
+    };
   }, []);
 
   const startListening = (selectedMode: 'subtitles' | 'notetaker') => {
@@ -97,19 +117,25 @@ export default function SermonLivePage() {
     setSummary('');
     setIsListening(true);
     isListeningRef.current = true;
+
     try {
+      recognitionRef.current = initRecognition();
       recognitionRef.current?.start();
     } catch (e) {
-      // Ignore if already started
+      console.error('Failed to start recognition:', e);
     }
   };
 
   const stopListening = () => {
     setIsListening(false);
     isListeningRef.current = false;
-    recognitionRef.current?.abort();
+    // Use stop() instead of abort() for a cleaner exit if possible
+    try {
+      recognitionRef.current?.stop();
+    } catch (e) {
+      recognitionRef.current?.abort();
+    }
     setInterimText('');
-    // Trigger summary for Note Taker mode OR subtitle mode with autoNotes enabled
     if ((mode === 'notetaker' || autoNotesRef.current) && transcriptRef.current.trim()) {
       handleSummarise();
     } else {
