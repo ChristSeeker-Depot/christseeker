@@ -267,7 +267,7 @@ Format your response exactly as follows using markdown:
               </div>
             ) : (
               <div className="glass-panel p-6 rounded-3xl">
-                <p className="text-sm opacity-80 mb-4">Are you battling a specific addiction, fear, or negative thought pattern not listed? Type it below, and Jesus AI will generate a personalized biblical battle plan.</p>
+                <p className="text-sm opacity-80 mb-4">Are you battling a specific addiction, fear, or negative thought pattern not listed? Type it below, and ChristSeeker will generate a personalized biblical battle plan.</p>
                 <input
                   type="text"
                   value={customTopic}
