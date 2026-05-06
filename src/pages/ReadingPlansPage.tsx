@@ -26,7 +26,104 @@ const BUILT_IN_PLANS: Omit<Plan, 'id'>[] = [
     ],
   },
   {
-    title: 'Peace in Anxiety — 5 Days',
+    title: '30 Days with Jesus',
+    description: 'A month-long deep dive into the life, ministry, and miracles of Christ.',
+    duration_days: 30,
+    plan_data: [
+      { day: 1, title: 'The Birth of Jesus', passages: ['Luke 2:1-20'], reflection: 'Humility starts in a manger. Praise God for His approachable glory.' },
+      { day: 2, title: 'The Baptism', passages: ['Matthew 3'], reflection: 'The Father\'s approval comes before Jesus\' ministry even begins. You too are loved.' },
+      { day: 3, title: 'Temptation in the Wilderness', passages: ['Matthew 4:1-11'], reflection: 'Jesus fought the enemy with the Word. What Scripture are you using today?' },
+      { day: 4, title: 'The Sermon on the Mount (Part 1)', passages: ['Matthew 5'], reflection: 'The Kingdom is for the poor in spirit. Acknowledge your need for Him.' },
+      { day: 5, title: 'The Sermon on the Mount (Part 2)', passages: ['Matthew 6'], reflection: 'Seek first the Kingdom. What worries are distracting you today?' },
+      { day: 6, title: 'The Sermon on the Mount (Part 3)', passages: ['Matthew 7'], reflection: 'Build your house on the Rock. What is your foundation today?' },
+      { day: 7, title: 'Healing the Leper', passages: ['Mark 1:40-45'], reflection: 'Jesus touches the "untouchable." Who are you avoiding that He wants to love?' },
+      { day: 8, title: 'Faith of the Centurion', passages: ['Matthew 8:5-13'], reflection: 'Authority is recognized by faith. Trust His word even from a distance.' },
+      { day: 9, title: 'Calming the Storm', passages: ['Mark 4:35-41'], reflection: '"Peace, be still." The wind and waves obey Him; so can your heart.' },
+      { day: 10, title: 'Jairus\' Daughter', passages: ['Mark 5:21-43'], reflection: '"Do not be afraid, only believe." He is the Lord over life and death.' },
+      { day: 11, title: 'Feeding the 5,000', passages: ['John 6:1-15'], reflection: 'He takes our "not enough" and makes it more than enough.' },
+      { day: 12, title: 'Walking on Water', passages: ['Matthew 14:22-33'], reflection: 'Keep your eyes on Jesus, not the waves. What is your "storm" today?' },
+      { day: 13, title: 'The Transfiguration', passages: ['Matthew 17:1-13'], reflection: 'A glimpse of His true glory. Listen to Him.' },
+      { day: 14, title: 'The Good Samaritan', passages: ['Luke 10:25-37'], reflection: 'Who is your neighbour? Love is shown in action, not just words.' },
+      { day: 15, title: 'Mary and Martha', passages: ['Luke 10:38-42'], reflection: 'Choose the "one thing" that is necessary: sitting at His feet.' },
+      { day: 16, title: 'The Prodigal Son', passages: ['Luke 15:11-32'], reflection: 'The Father is running toward you. No matter where you\'ve been, come home.' },
+      { day: 17, title: 'Lazarus Raised', passages: ['John 11:1-44'], reflection: '"I am the resurrection and the life." He can bring life to dead places.' },
+      { day: 18, title: 'The Triumphal Entry', passages: ['Matthew 21:1-11'], reflection: 'Hosanna! Is He the King of your daily decisions?' },
+      { day: 19, title: 'Cleansing the Temple', passages: ['Mark 11:15-19'], reflection: 'Your heart is His temple. Is there anything He needs to clear out today?' },
+      { day: 20, title: 'The Last Supper', passages: ['Luke 22:7-23'], reflection: '"Do this in remembrance of me." Reflect on the body broken for you.' },
+      { day: 21, title: 'Gethsemane', passages: ['Matthew 26:36-46'], reflection: '"Not my will, but Yours be done." What are you struggling to surrender?' },
+      { day: 22, title: 'The Betrayal & Arrest', passages: ['John 18:1-14'], reflection: 'Jesus goes willingly. He was bound so you could be free.' },
+      { day: 23, title: 'Peter\'s Denial', passages: ['Luke 22:54-62'], reflection: 'Failure is not final. He knew Peter would fail, and He still loved him.' },
+      { day: 24, title: 'The Trial', passages: ['John 18:28-40'], reflection: 'The King of Truth stands before the world. Do you recognize His voice?' },
+      { day: 25, title: 'The Crucifixion', passages: ['Luke 23:26-49'], reflection: 'It is finished. Sit in silence at the foot of the cross.' },
+      { day: 26, title: 'The Burial', passages: ['John 19:38-42'], reflection: 'The silence of the tomb. Trust Him even in the waiting.' },
+      { day: 27, title: 'The Resurrection', passages: ['Matthew 28:1-10'], reflection: 'He is risen! Death is defeated. Live in the power of the empty tomb today.' },
+      { day: 28, title: 'The Road to Emmaus', passages: ['Luke 24:13-35'], reflection: 'Does your heart burn within you when He speaks? Invite Him to stay.' },
+      { day: 29, title: 'The Great Commission', passages: ['Matthew 28:16-20'], reflection: 'Go and make disciples. You are not alone; He is with you always.' },
+      { day: 30, title: 'The Ascension', passages: ['Acts 1:1-11'], reflection: 'He is seated at the right hand of the Father, interceding for you.' },
+    ],
+  },
+  {
+    title: 'Women of Faith',
+    description: '10 days exploring the courage, devotion, and impact of women in the Bible.',
+    duration_days: 10,
+    plan_data: [
+      { day: 1, title: 'Sarah: Trusting the Impossible', passages: ['Genesis 21:1-7'], reflection: 'God is faithful to His promises, even when we laugh in doubt.' },
+      { day: 2, title: 'Rahab: A New Legacy', passages: ['Joshua 2'], reflection: 'Your past does not define your future in God\'s Kingdom.' },
+      { day: 3, title: 'Deborah: Leading with Courage', passages: ['Judges 4'], reflection: 'God calls leaders from unexpected places. Will you say yes?' },
+      { day: 4, title: 'Ruth: Loyal Love', passages: ['Ruth 1'], reflection: 'Faithfulness often looks like staying when it\'s easier to leave.' },
+      { day: 5, title: 'Hannah: Persistent Prayer', passages: ['1 Samuel 1'], reflection: 'Pour out your soul to the Lord. He hears the silent cries of the heart.' },
+      { day: 6, title: 'Esther: For Such a Time as This', passages: ['Esther 4'], reflection: 'You are where you are for a divine purpose. Be bold.' },
+      { day: 7, title: 'Mary of Nazareth: Total Surrender', passages: ['Luke 1:26-38'], reflection: '"Let it be to me according to your word." This is the ultimate prayer.' },
+      { day: 8, title: 'The Woman at the Well: Fully Known', passages: ['John 4:1-42'], reflection: 'He knows your secrets and still offers you living water.' },
+      { day: 9, title: 'Mary Magdalene: First Witness', passages: ['John 20:1-18'], reflection: 'The one who was forgiven much, loved much. He calls your name too.' },
+      { day: 10, title: 'Lydia: The Open Heart', passages: ['Acts 16:11-15'], reflection: 'Hospitality is a spiritual gift. How can you open your heart and home today?' },
+    ],
+  },
+  {
+    title: 'Kingdom Leadership',
+    description: '7 days of wisdom for those called to lead and serve others.',
+    duration_days: 7,
+    plan_data: [
+      { day: 1, title: 'The Servant Leader', passages: ['Mark 10:35-45'], reflection: 'Greatness in the Kingdom is measured by service, not status.' },
+      { day: 2, title: 'Nehemiah: The Builder', passages: ['Nehemiah 2'], reflection: 'Leadership starts with a burden and a prayer. What has God put on your heart?' },
+      { day: 3, title: 'Joshua: Be Strong & Courageous', passages: ['Joshua 1'], reflection: 'The key to courage is the constant presence of God and His Word.' },
+      { day: 4, title: 'David: A Heart for God', passages: ['1 Samuel 16:1-13'], reflection: 'Man looks at the outward appearance, but God looks at the heart.' },
+      { day: 5, title: 'Solomon: Seeking Wisdom', passages: ['1 Kings 3'], reflection: 'Above all else, ask God for a discerning heart to lead His people.' },
+      { day: 6, title: 'Paul: Passing the Torch', passages: ['2 Timothy 2'], reflection: 'Leadership is about reproduction. Who are you investing in today?' },
+      { day: 7, title: 'The Chief Shepherd', passages: ['1 Peter 5:1-4'], reflection: 'Lead with a willing heart, not for personal gain. Your reward is eternal.' },
+    ],
+  },
+  {
+    title: 'Strength in the Storm',
+    description: '5 days of biblical comfort for those walking through grief or hardship.',
+    duration_days: 5,
+    plan_data: [
+      { day: 1, title: 'He is Close', passages: ['Psalm 34:18'], reflection: 'The Lord is near to the brokenhearted. You don\'t have to reach far.' },
+      { day: 2, title: 'The Valley', passages: ['Psalm 23:4'], reflection: 'He does not remove the valley, but He walks *through* it with you.' },
+      { day: 3, title: 'God of All Comfort', passages: ['2 Corinthians 1:3-4'], reflection: 'He comforts us so we can comfort others. Your pain has a future purpose.' },
+      { day: 4, title: 'Man of Sorrows', passages: ['Isaiah 53:3-5'], reflection: 'Jesus is acquainted with grief. He truly understands your pain.' },
+      { day: 5, title: 'No More Tears', passages: ['Revelation 21:1-4'], reflection: 'This is not the end. One day, He will wipe every tear away.' },
+    ],
+  },
+  {
+    title: 'Proverbs: Wisdom for Living',
+    description: '10 days in the book of Proverbs exploring practical wisdom.',
+    duration_days: 10,
+    plan_data: [
+      { day: 1, title: 'The Fear of the Lord', passages: ['Proverbs 1:1-7'], reflection: 'Wisdom begins with awe. Acknowledge God\'s authority over your life.' },
+      { day: 2, title: 'Trust vs. Understanding', passages: ['Proverbs 3:5-6'], reflection: 'Stop trying to figure it all out. Trust the One who already has.' },
+      { day: 3, title: 'Guard Your Heart', passages: ['Proverbs 4:20-27'], reflection: 'Everything you do flows from your heart. What are you letting in?' },
+      { day: 4, title: 'The Power of Words', passages: ['Proverbs 18:21'], reflection: 'Death and life are in the tongue. Use your words to build up today.' },
+      { day: 5, title: 'Friendship', passages: ['Proverbs 17:17'], reflection: 'A friend loves at all times. Who can you show brotherly love to today?' },
+      { day: 6, title: 'Hard Work vs. Sloth', passages: ['Proverbs 6:6-11'], reflection: 'Excellence in small things is worship. Do your work for the Lord.' },
+      { day: 7, title: 'Integrity', passages: ['Proverbs 11:1-3'], reflection: 'Honest scales are the Lord\'s delight. Choose the right path, even when no one is looking.' },
+      { day: 8, title: 'Humility', passages: ['Proverbs 16:18-19'], reflection: 'Pride goes before a fall. Ask God for a humble spirit today.' },
+      { day: 9, title: 'Generosity', passages: ['Proverbs 11:24-25'], reflection: 'The generous soul will be made rich. Give freely and trust God to provide.' },
+      { day: 10, title: 'Planning & Sovereignty', passages: ['Proverbs 16:9'], reflection: 'You can plan your course, but the Lord determines your steps. Rest in that.' },
+    ],
+  },
+  {
+    title: 'Peace in Anxiety',
     description: 'Biblical anchors for anxious hearts.',
     duration_days: 5,
     plan_data: [
@@ -38,7 +135,7 @@ const BUILT_IN_PLANS: Omit<Plan, 'id'>[] = [
     ],
   },
   {
-    title: 'Armour of God — 7 Days',
+    title: 'Armour of God',
     description: 'A week suiting up for spiritual battle with Ephesians 6.',
     duration_days: 7,
     plan_data: [
@@ -52,7 +149,7 @@ const BUILT_IN_PLANS: Omit<Plan, 'id'>[] = [
     ],
   },
   {
-    title: 'Fruit of the Spirit — 9 Days',
+    title: 'Fruit of the Spirit',
     description: 'Exploring each fruit and asking God to cultivate it in you.',
     duration_days: 9,
     plan_data: [
@@ -68,36 +165,7 @@ const BUILT_IN_PLANS: Omit<Plan, 'id'>[] = [
     ],
   },
   {
-    title: 'Psalms of Praise — 7 Days',
-    description: 'Seven worship Psalms to reorient your heart toward God.',
-    duration_days: 7,
-    plan_data: [
-      { day: 1, title: 'The Lord is My Shepherd', passages: ['Psalm 23'], reflection: 'Read it slowly. Which line speaks most to your life right now? Sit with it.' },
-      { day: 2, title: 'The Heavens Declare', passages: ['Psalm 19'], reflection: 'Go outside today and look up. Creation is singing — join it.' },
-      { day: 3, title: 'Taste and See', passages: ['Psalm 34'], reflection: '"Taste and see that the Lord is good." Write three things He has done for you.' },
-      { day: 4, title: 'As the Deer', passages: ['Psalm 42'], reflection: 'Even in depression, the Psalmist preaches to himself. What truth do you need to speak to your soul?' },
-      { day: 5, title: 'God is Our Refuge', passages: ['Psalm 46'], reflection: '"Be still and know that I am God." Set a 3-minute timer and simply be still.' },
-      { day: 6, title: 'Create in Me', passages: ['Psalm 51'], reflection: 'This is the great prayer of repentance. Is there anything you need to bring to God today?' },
-      { day: 7, title: 'Let Everything Praise', passages: ['Psalm 150'], reflection: 'End this plan by praising God — out loud, in whatever way feels natural to you.' },
-    ],
-  },
-  {
-    title: 'The Beatitudes — 8 Days',
-    description: 'Jesus\'s upside-down Kingdom values from the Sermon on the Mount.',
-    duration_days: 8,
-    plan_data: [
-      { day: 1, title: 'The Sermon on the Mount', passages: ['Matthew 5:1-12'], reflection: 'Read all the Beatitudes in one sitting. Which one challenges you most?' },
-      { day: 2, title: 'Poor in Spirit', passages: ['Matthew 5:3'], reflection: 'Blessed are those who know they need God. Acknowledge your dependence on Him today.' },
-      { day: 3, title: 'Those Who Mourn', passages: ['Matthew 5:4'], reflection: 'God comforts the brokenhearted. What grief are you carrying? Bring it to Him.' },
-      { day: 4, title: 'The Meek', passages: ['Matthew 5:5'], reflection: 'Meekness is not weakness — it is trusting God to be your vindicator. Where do you need that?' },
-      { day: 5, title: 'Hunger for Righteousness', passages: ['Matthew 5:6'], reflection: 'What are you most hungry for right now? Is it the right thing?' },
-      { day: 6, title: 'The Merciful', passages: ['Matthew 5:7'], reflection: 'Mercy received overflows as mercy given. Who needs mercy from you today?' },
-      { day: 7, title: 'The Pure in Heart', passages: ['Matthew 5:8'], reflection: 'A pure heart is an undivided heart. What is dividing your attention from God?' },
-      { day: 8, title: 'Peacemakers', passages: ['Matthew 5:9'], reflection: 'Where can you be a peacemaker this week? Take a practical step today.' },
-    ],
-  },
-  {
-    title: 'The Lord\'s Prayer — 7 Days',
+    title: 'The Lord\'s Prayer',
     description: 'A slow, deep walk through every line Jesus taught us to pray.',
     duration_days: 7,
     plan_data: [
@@ -113,7 +181,7 @@ const BUILT_IN_PLANS: Omit<Plan, 'id'>[] = [
 ];
 
 export default function ReadingPlansPage() {
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
   const [plans, setPlans] = useState<Plan[]>([]);
   const [userPlans, setUserPlans] = useState<UserPlan[]>([]);
   const [activeDay, setActiveDay] = useState<DayReading | null>(null);
@@ -127,10 +195,18 @@ export default function ReadingPlansPage() {
   const loadAll = async () => {
     if (!user) return;
     // Fetch or seed plans
+    // Fetch existing plans
     const { data: existingPlans } = await supabase.from('reading_plans').select('*');
-    if (!existingPlans || existingPlans.length === 0) {
-      const { data: seeded } = await supabase.from('reading_plans').insert(BUILT_IN_PLANS).select('*');
-      setPlans((seeded as Plan[]) ?? []);
+    const existingTitles = new Set(existingPlans?.map(p => p.title) || []);
+    
+    // Find plans that aren't in the DB yet
+    const missingPlans = BUILT_IN_PLANS.filter(p => !existingTitles.has(p.title));
+    
+    if (missingPlans.length > 0) {
+      await supabase.from('reading_plans').insert(missingPlans);
+      // Re-fetch everything to include the new ones
+      const { data: allPlans } = await supabase.from('reading_plans').select('*');
+      setPlans(allPlans as Plan[]);
     } else {
       setPlans(existingPlans as Plan[]);
     }
@@ -157,9 +233,13 @@ export default function ReadingPlansPage() {
     setActivePlan(up); setActiveDay(day); setVerseData(null);
     setLoadingVerse(true);
     try {
-      const res = await fetch(`https://bible-api.com/${encodeURIComponent(day.passages[0])}`);
-      const d = await res.json();
-      if (d.text) setVerseData(d.text.trim());
+      const { data, error } = await supabase.functions.invoke('get-passage', {
+        body: {
+          passage: day.passages[0],
+          translation: profile?.bible_translation || 'NIV'
+        }
+      });
+      if (!error && data?.text) setVerseData(data.text);
     } catch { /* silent */ } finally { setLoadingVerse(false); }
   };
 

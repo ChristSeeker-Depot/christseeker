@@ -7,12 +7,18 @@ import { Church, ChevronRight, PenLine } from 'lucide-react';
 
 const DENOMINATIONS = [
   'Anglican',
-  'Catholic',
   'Baptist',
-  'Reformed',
-  'Pentecostal',
-  'Orthodox',
+  'Catholic',
+  'Coptic',
+  'Evangelical',
+  'Lutheran',
+  'Methodist',
   'Non-Denominational',
+  'Orthodox',
+  'Pentecostal',
+  'Presbyterian',
+  'Reformed',
+  'Seventh-day Adventist',
 ];
 
 export default function OnboardingPage() {

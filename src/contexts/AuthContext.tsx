@@ -6,6 +6,9 @@ export interface UserProfile {
   id: string;
   denomination: string;
   church_name: string | null;
+  church_id: string | null;
+  role: 'member' | 'admin' | 'leader';
+  bible_translation: string;
   display_name: string | null;
   theme: 'light' | 'dark' | 'parchment';
   font_size: 'sm' | 'base' | 'lg';
@@ -95,6 +98,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   useEffect(() => {
+    // "Remember Me = OFF" check: if the user opted out of persistence,
+    // sign them out on a fresh page load (sessionStorage clears when browser closes).
+    const sessionOnly = sessionStorage.getItem('cs_session_only');
+    if (sessionOnly === 'true') {
+      sessionStorage.removeItem('cs_session_only');
+      supabase.auth.signOut().then(() => setLoading(false));
+      return;
+    }
+
     supabase.auth.getSession().then(({ data: { session } }) => {
       setUser(session?.user ?? null);
       if (session?.user) {

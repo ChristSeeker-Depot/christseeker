@@ -86,7 +86,7 @@ export default function BreathPrayerPage() {
                 <span className="text-white text-3xl font-bold mt-1">{countdown}</span>
               </>
             ) : (
-              <span className="text-white font-semibold text-sm text-center px-3">Tap to begin</span>
+              <span className="text-white font-semibold text-sm text-center px-3">Begin</span>
             )}
           </motion.div>
         </div>

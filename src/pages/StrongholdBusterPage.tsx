@@ -16,48 +16,48 @@ type Stronghold = {
 
 const STRONGHOLDS: Stronghold[] = [
   {
-    id: 'lust',
-    title: 'Lust & Purity',
-    description: 'Breaking the cycle of visual and mental impurity.',
-    declaration: 'I am a new creation. My body is a temple of the Holy Spirit. I will not be mastered by my desires.',
+    id: 'purity',
+    title: 'Cultivating Purity',
+    description: 'Protecting your mind and heart for a deeper walk with God.',
+    declaration: 'I am a new creation. My body is a temple of the Holy Spirit. I am empowered to choose what is good, pure, and true.',
     passages: [
-      { ref: '1 Corinthians 6:18-20', text: 'Flee from sexual immorality. All other sins a person commits are outside the body, but whoever sins sexually, sins against their own body. Do you not know that your bodies are temples of the Holy Spirit, who is in you, whom you have received from God? You are not your own; you were bought at a price. Therefore honor God with your bodies.' },
+      { ref: '1 Corinthians 6:18-20', text: 'Flee from sexual immorality... Do you not know that your bodies are temples of the Holy Spirit, who is in you... You were bought at a price.' },
       { ref: 'Psalm 119:9', text: 'How can a young person stay on the path of purity? By living according to your word.' }
     ],
-    prayer: 'Lord Jesus, I confess my struggle with lust and impurity. I am tired of being ruled by my desires and the images of this world. I renounce the lies that say I cannot change. Wash my mind with Your Word. Create in me a pure heart, O God. Give me the strength to flee temptation the moment it arises. I present my body to You today as a living sacrifice. Let my eyes be fixed on You alone. In Your holy name, Amen.',
+    prayer: 'Lord Jesus, I want my heart and mind to be a place where You feel at home. I renounce the lies that say I am stuck in old patterns. Wash my thoughts with Your Word. Give me the strength to turn my eyes toward You whenever I feel tempted. I choose Your path of life today. Amen.',
   },
   {
-    id: 'anxiety',
-    title: 'Anxiety & Fear',
-    description: 'Overcoming the weight of constant worry and panic.',
-    declaration: 'God has not given me a spirit of fear, but of power, love, and a sound mind. I cast my cares on Him.',
+    id: 'peace',
+    title: 'Finding Perfect Peace',
+    description: 'Quietening the noise of worry and resting in His care.',
+    declaration: 'God has not given me a spirit of fear, but of power, love, and a sound mind. I cast every care on Him today.',
     passages: [
-      { ref: 'Philippians 4:6-7', text: 'Do not be anxious about anything, but in every situation, by prayer and petition, with thanksgiving, present your requests to God. And the peace of God, which transcends all understanding, will guard your hearts and your minds in Christ Jesus.' },
+      { ref: 'Philippians 4:6-7', text: 'Do not be anxious about anything... And the peace of God, which transcends all understanding, will guard your hearts.' },
       { ref: '2 Timothy 1:7', text: 'For the Spirit God gave us does not make us timid, but gives us power, love and self-discipline.' }
     ],
-    prayer: 'Father, my mind is racing and my heart is heavy with fear. I bring all my \'what-ifs\' and worst-case scenarios to the foot of the cross right now. I renounce the spirit of fear and anxiety over my life. I declare that You are in control of my future. Fill me with Your perfect peace that makes no sense to the world. Guard my mind today. I choose to trust You. In Jesus\' name, Amen.',
+    prayer: 'Father, I bring my racing thoughts to You. I renounce the weight of worry and I accept Your peace right now. You are in control of my future, and You are bigger than any problem I face. I choose to trust in Your goodness today. Amen.',
   },
   {
-    id: 'pride',
-    title: 'Pride & Control',
-    description: 'Surrendering the need to be right, seen, and in charge.',
-    declaration: 'I choose to humble myself under the mighty hand of God. I exist for His glory, not my own.',
+    id: 'humility',
+    title: 'Walking in Humility',
+    description: 'Surrendering the heavy burden of control and self-importance.',
+    declaration: 'I choose to humble myself under the mighty hand of God. My life exists to reflect His light, not my own.',
     passages: [
-      { ref: 'James 4:6', text: 'But he gives us more grace. That is why Scripture says: "God opposes the proud but shows favor to the humble."' },
-      { ref: 'Philippians 2:3-4', text: 'Do nothing out of selfish ambition or vain conceit. Rather, in humility value others above yourselves, not looking to your own interests but each of you to the interests of the others.' }
+      { ref: 'James 4:6', text: 'God opposes the proud but shows favor to the humble.' },
+      { ref: 'Philippians 2:3-4', text: 'In humility value others above yourselves... not looking to your own interests but each of you to the interests of the others.' }
     ],
-    prayer: 'Lord, forgive me for making myself the center of my universe. Forgive my need to control, my need to be right, and my desire for the applause of people. I renounce pride in all its forms. Break my stubborn will. Teach me the beauty of humility. Help me to serve others quietly today, without seeking recognition. I lay my crown at Your feet. You alone are King. In Jesus\' name, Amen.',
+    prayer: 'Lord, I lay down my need to be right and my need to be in charge. It is a heavy weight I was never meant to carry. Teach me the freedom of serving others without needing recognition. I find my worth in being Your child, not in my own achievements. Amen.',
   },
   {
-    id: 'anger',
-    title: 'Anger & Bitterness',
-    description: 'Releasing unforgiveness and a hot temper.',
-    declaration: 'I forgive as I have been forgiven. I surrender my right to revenge to the Lord.',
+    id: 'forgiveness',
+    title: 'Choosing Forgiveness',
+    description: 'Releasing the pain of the past to step into a lighter future.',
+    declaration: 'I forgive as I have been forgiven. I release every debt and every grudge into the hands of the Lord.',
     passages: [
-      { ref: 'Ephesians 4:31-32', text: 'Get rid of all bitterness, rage and anger, brawling and slander, along with every form of malice. Be kind and compassionate to one another, forgiving each other, just as in Christ God forgave you.' },
-      { ref: 'James 1:19-20', text: 'My dear brothers and sisters, take note of this: Everyone should be quick to listen, slow to speak and slow to become angry, because human anger does not produce the righteousness that God desires.' }
+      { ref: 'Ephesians 4:31-32', text: 'Get rid of all bitterness, rage and anger... Be kind and compassionate to one another, forgiving each other.' },
+      { ref: 'James 1:19-20', text: 'Everyone should be quick to listen, slow to speak and slow to become angry.' }
     ],
-    prayer: 'Father God, I confess the anger and bitterness that has taken root in my heart. I release those who have hurt me [name them specifically if needed]. I choose to forgive them right now, just as You have completely forgiven me. Drain the poison of resentment from my soul. Replace my quick temper with Your patience and gentleness. Let Your grace overflow in me so I can respond with love instead of rage. In Jesus\' name, Amen.',
+    prayer: 'Father, I release the people who have hurt me. I choose to forgive them right now, just as You have completely forgiven me. Drain the poison of resentment from my heart and fill me with Your compassion. I choose to walk in love today. Amen.',
   },
 ];
 
@@ -158,30 +158,35 @@ Format your response exactly as follows using markdown:
 
   const StrongholdView = ({ data }: { data: Stronghold }) => (
     <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
-      <div className="glass-panel p-6 rounded-3xl" style={{ borderLeft: '4px solid #e53e3e' }}>
-        <h3 className="text-xs font-semibold uppercase tracking-widest mb-2 text-red-500">The Declaration</h3>
-        <p className="text-xl font-bold leading-snug">"{data.declaration}"</p>
+      <div className="glass-panel p-6 rounded-3xl border-l-4 border-red-500/50">
+        <h3 className="text-[10px] font-bold uppercase tracking-[0.2em] mb-3 opacity-50">Step 1: Confront the Lie</h3>
+        <p className="text-lg opacity-80 italic">"{data.description}"</p>
       </div>
 
-      <div className="glass-panel p-6 rounded-3xl space-y-4">
-        <h3 className="text-xs font-semibold uppercase tracking-widest flex items-center gap-2" style={{ color: 'var(--accent)' }}>
-          <Shield className="w-4 h-4" /> The Sword of the Spirit
+      <div className="glass-panel p-6 rounded-3xl space-y-4 border-l-4 border-indigo-500/50">
+        <h3 className="text-[10px] font-bold uppercase tracking-[0.2em] mb-1 opacity-50 flex items-center gap-2">
+          Step 2: The Sword of Truth
         </h3>
         {data.passages.map((p, i) => (
-          <div key={i}>
-            <p className="font-bold text-sm mb-1">{p.ref}</p>
-            <p className="text-sm opacity-80 leading-relaxed italic border-l-2 pl-3 py-1" style={{ borderColor: 'var(--bg-card-border)' }}>
+          <div key={i} className="mb-4 last:mb-0">
+            <p className="font-bold text-sm mb-1 text-indigo-400">{p.ref}</p>
+            <p className="text-base opacity-90 leading-relaxed font-serif">
               "{p.text}"
             </p>
           </div>
         ))}
       </div>
 
-      <div className="glass-panel p-6 rounded-3xl">
-        <h3 className="text-xs font-semibold uppercase tracking-widest mb-4 flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
-          Prayer of Breaking
+      <div className="glass-panel p-6 rounded-3xl border-l-4 border-emerald-500/50 bg-emerald-500/5">
+        <h3 className="text-[10px] font-bold uppercase tracking-[0.2em] mb-3 opacity-50">Step 3: Declaration of Victory</h3>
+        <p className="text-xl font-bold leading-tight text-emerald-400">"{data.declaration}"</p>
+      </div>
+
+      <div className="glass-panel p-6 rounded-3xl border-l-4 border-[var(--accent)]/50">
+        <h3 className="text-[10px] font-bold uppercase tracking-[0.2em] mb-4 opacity-50">
+          Step 4: Prayer of Breaking
         </h3>
-        <p className="text-sm leading-relaxed whitespace-pre-wrap">{data.prayer}</p>
+        <p className="text-sm leading-relaxed whitespace-pre-wrap opacity-80">{data.prayer}</p>
       </div>
 
       <motion.button

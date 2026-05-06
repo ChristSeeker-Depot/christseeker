@@ -76,11 +76,11 @@ export default function ChatPage() {
         setShowSamaritans(true);
       }
 
-      // Call Edge Function
+      // Call Edge Function — cap history at last 20 messages to prevent context overflow
       const { data, error } = await supabase.functions.invoke('chat', {
         body: {
           message: userMessage,
-          history: messages.map(m => ({ role: m.role, content: m.content })),
+          history: messages.slice(-20).map(m => ({ role: m.role, content: m.content })),
           denomination: profile.denomination
         }
       });

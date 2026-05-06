@@ -15,6 +15,9 @@ import SermonLivePage from './pages/SermonLivePage';
 import DevotionalPage from './pages/DevotionalPage';
 import ReadingPlansPage from './pages/ReadingPlansPage';
 import StrongholdBusterPage from './pages/StrongholdBusterPage';
+import PrivacyPolicyPage from './pages/PrivacyPolicyPage';
+import SupportPage from './pages/SupportPage';
+import BugReportPage from './pages/BugReportPage';
 
 /** Applies theme and font-size data attributes to <html> based on user profile */
 function ThemeApplier() {
@@ -65,6 +68,9 @@ function AppRoutes() {
       <Route path="/devotional" element={<ProtectedRoute><DevotionalPage /></ProtectedRoute>} />
       <Route path="/plans" element={<ProtectedRoute><ReadingPlansPage /></ProtectedRoute>} />
       <Route path="/stronghold" element={<ProtectedRoute><StrongholdBusterPage /></ProtectedRoute>} />
+      <Route path="/privacy" element={<PrivacyPolicyPage />} />
+      <Route path="/support" element={<SupportPage />} />
+      <Route path="/bug-report" element={<ProtectedRoute><BugReportPage /></ProtectedRoute>} />
     </Routes>
   );
 }
