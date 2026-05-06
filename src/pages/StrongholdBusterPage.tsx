@@ -9,6 +9,7 @@ type Stronghold = {
   id: string;
   title: string;
   description: string;
+  lie: string;
   declaration: string;
   passages: { ref: string; text: string }[];
   prayer: string;
@@ -19,6 +20,7 @@ const STRONGHOLDS: Stronghold[] = [
     id: 'purity',
     title: 'Cultivating Purity',
     description: 'Protecting your mind and heart for a deeper walk with God.',
+    lie: 'I am defined by my past mistakes and my physical desires are too strong to control.',
     declaration: 'I am a new creation. My body is a temple of the Holy Spirit. I am empowered to choose what is good, pure, and true.',
     passages: [
       { ref: '1 Corinthians 6:18-20', text: 'Flee from sexual immorality... Do you not know that your bodies are temples of the Holy Spirit, who is in you... You were bought at a price.' },
@@ -30,6 +32,7 @@ const STRONGHOLDS: Stronghold[] = [
     id: 'peace',
     title: 'Finding Perfect Peace',
     description: 'Quietening the noise of worry and resting in His care.',
+    lie: 'If I don\'t constantly worry and try to control everything, my life will fall apart.',
     declaration: 'God has not given me a spirit of fear, but of power, love, and a sound mind. I cast every care on Him today.',
     passages: [
       { ref: 'Philippians 4:6-7', text: 'Do not be anxious about anything... And the peace of God, which transcends all understanding, will guard your hearts.' },
@@ -41,6 +44,7 @@ const STRONGHOLDS: Stronghold[] = [
     id: 'humility',
     title: 'Walking in Humility',
     description: 'Surrendering the heavy burden of control and self-importance.',
+    lie: 'My worth is determined by my achievements, my status, and what other people think of me.',
     declaration: 'I choose to humble myself under the mighty hand of God. My life exists to reflect His light, not my own.',
     passages: [
       { ref: 'James 4:6', text: 'God opposes the proud but shows favor to the humble.' },
@@ -52,6 +56,7 @@ const STRONGHOLDS: Stronghold[] = [
     id: 'forgiveness',
     title: 'Choosing Forgiveness',
     description: 'Releasing the pain of the past to step into a lighter future.',
+    lie: 'They don\'t deserve my forgiveness, and holding onto this anger is the only way to protect myself.',
     declaration: 'I forgive as I have been forgiven. I release every debt and every grudge into the hands of the Lord.',
     passages: [
       { ref: 'Ephesians 4:31-32', text: 'Get rid of all bitterness, rage and anger... Be kind and compassionate to one another, forgiving each other.' },
@@ -87,6 +92,9 @@ export default function StrongholdBusterPage() {
           message: `Create a "Stronghold Buster" guide for a Christian struggling to break free from: "${customTopic}". 
 Format your response exactly as follows using markdown:
 
+**🛑 The Lie**
+[A one-sentence description of the specific lie the enemy uses regarding this struggle]
+
 **🔥 Declaration**
 [A powerful, one-sentence biblical declaration of freedom using "I am" or "I will"]
 
@@ -107,6 +115,7 @@ Format your response exactly as follows using markdown:
       // Parse the markdown returned by Gemini into the Stronghold object shape
       const responseText = data.reply as string;
       
+      const lieMatch = responseText.match(/\*\*🛑 The Lie\*\*\n([\s\S]*?)\n\n\*\*🔥/);
       const declarationMatch = responseText.match(/\*\*🔥 Declaration\*\*\n([\s\S]*?)\n\n\*\*📖/);
       const prayerMatch = responseText.match(/\*\*🙏 Prayer of Breaking\*\*\n([\s\S]*)$/);
       const passagesBlock = responseText.match(/\*\*📖 The Sword of the Spirit\*\*\n([\s\S]*?)\n\n\*\*🙏/);
@@ -127,7 +136,8 @@ Format your response exactly as follows using markdown:
       setCustomData({
         id: 'custom',
         title: `Breaking ${customTopic}`,
-        description: 'Your personalized freedom guide.',
+        description: `A battle plan for ${customTopic}.`,
+        lie: lieMatch ? lieMatch[1].trim() : `I am powerless against ${customTopic}.`,
         declaration: declarationMatch ? declarationMatch[1].trim() : 'I am free in Christ Jesus.',
         passages: passages.length > 0 ? passages : [{ref: '2 Corinthians 10:4', text: 'The weapons we fight with are not the weapons of the world. On the contrary, they have divine power to demolish strongholds.'}],
         prayer: prayerMatch ? prayerMatch[1].trim() : 'Lord, set me free. Amen.',
@@ -160,7 +170,7 @@ Format your response exactly as follows using markdown:
     <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
       <div className="glass-panel p-6 rounded-3xl border-l-4 border-red-500/50">
         <h3 className="text-[10px] font-bold uppercase tracking-[0.2em] mb-3 opacity-50">Step 1: Confront the Lie</h3>
-        <p className="text-lg opacity-80 italic">"{data.description}"</p>
+        <p className="text-lg opacity-80 italic">"{data.lie}"</p>
       </div>
 
       <div className="glass-panel p-6 rounded-3xl space-y-4 border-l-4 border-indigo-500/50">
