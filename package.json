@@ -15,10 +15,12 @@
     "@google/genai": "^1.50.1",
     "@supabase/supabase-js": "^2.104.1",
     "framer-motion": "^12.38.0",
+    "html2canvas": "^1.4.1",
     "lucide-react": "^1.11.0",
     "react": "^19.2.5",
     "react-dom": "^19.2.5",
-    "react-router-dom": "^7.14.2"
+    "react-router-dom": "^7.14.2",
+    "react-youtube": "^10.1.0"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",

@@ -1,10 +1,13 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { Link } from 'react-router-dom';
-import { BookOpen, MessageCircle, Music, LogOut, Settings, X, RefreshCw, BookMarked, Search, Wind, Heart, BookOpenCheck, Mic, Sparkles, ListChecks, Shield, Plus } from 'lucide-react';
+import { BookOpen, MessageCircle, Music, LogOut, Settings, X, RefreshCw, BookMarked, Search, Wind, Heart, BookOpenCheck, Mic, Sparkles, ListChecks, Shield, Plus, Download } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '../lib/supabase';
 import { getDailyIndex, PRAYER_GUIDES } from '../data/spiritualData';
+import TextToSpeech from '../components/TextToSpeech';
+import html2canvas from 'html2canvas';
+import { useRef } from 'react';
 
 const ToolCard = ({ to, icon: Icon, title, desc, delay = 0, span = '' }: { to: string; icon: any; title: string; desc: string; delay?: number; span?: string }) => (
   <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay }} className={span}>
@@ -28,6 +31,28 @@ export default function DashboardPage() {
   const [verse, setVerse] = useState<{ text: string, reference: string, reflection: string } | null>(null);
   const [song, setSong] = useState<{ title: string, artist: string, theme: string, lyrics: string } | null>(null);
   const [loadingDaily, setLoadingDaily] = useState(true);
+  const verseRef = useRef<HTMLDivElement>(null);
+  const [exporting, setExporting] = useState(false);
+
+  const handleExport = async () => {
+    if (!verseRef.current) return;
+    setExporting(true);
+    try {
+      const canvas = await html2canvas(verseRef.current, { 
+        backgroundColor: document.body.style.backgroundColor || '#ffffff', 
+        scale: 2 
+      });
+      const dataUrl = canvas.toDataURL('image/png');
+      const link = document.createElement('a');
+      link.download = `ChristSeeker-Verse.png`;
+      link.href = dataUrl;
+      link.click();
+    } catch (err) {
+      console.error('Export failed', err);
+    } finally {
+      setExporting(false);
+    }
+  };
 
   useEffect(() => {
     const denomGuides = profile?.denomination && PRAYER_GUIDES[profile.denomination]
@@ -225,13 +250,19 @@ export default function DashboardPage() {
                 ) : modalContent === 'verse' && verse && (
                   <div>
                     <h3 className="text-xs font-semibold uppercase tracking-widest mb-6" style={{ color: 'var(--text-muted)' }}>Deeper Reflection</h3>
-                    <h2 className="text-3xl font-serif italic mb-3">"{verse.text}"</h2>
-                    <p className="font-bold text-lg mb-6">— {verse.reference}</p>
-                    <div className="p-6 rounded-[2rem]" style={{ background: 'var(--bg-card)' }}>
-                      <p className="text-sm leading-relaxed" style={{ color: 'var(--text-muted)' }}>{verse.reflection}</p>
+                    <div ref={verseRef} className="p-6 -mx-6 sm:mx-0 sm:rounded-[2rem]" style={{ background: 'var(--bg-primary)' }}>
+                      <h2 className="text-3xl font-serif italic mb-3">"{verse.text}"</h2>
+                      <p className="font-bold text-lg mb-6">— {verse.reference}</p>
+                      <div className="p-6 rounded-[2rem]" style={{ background: 'var(--bg-card)' }}>
+                        <p className="text-sm leading-relaxed" style={{ color: 'var(--text-muted)' }}>{verse.reflection}</p>
+                      </div>
                     </div>
-                    <div className="mt-8 flex justify-center">
-                      <motion.button whileTap={{ scale: 0.95 }} onClick={handleRegenerate} disabled={loadingDaily} className="flex items-center gap-2 px-6 py-3 rounded-2xl text-sm font-bold disabled:opacity-50" style={{ background: 'var(--bg-card)', border: '1px solid var(--bg-card-border)' }}>
+                    <div className="mt-8 flex flex-wrap justify-center gap-3">
+                      <TextToSpeech text={`Verse of the day. ${verse.reference}. ${verse.text}. Reflection: ${verse.reflection}`} />
+                      <motion.button whileTap={{ scale: 0.95 }} onClick={handleExport} disabled={exporting} className="flex items-center gap-2 px-4 py-3 rounded-full text-sm font-bold disabled:opacity-50" style={{ background: 'var(--bg-card)', border: '1px solid var(--bg-card-border)' }}>
+                        {exporting ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />} Share
+                      </motion.button>
+                      <motion.button whileTap={{ scale: 0.95 }} onClick={handleRegenerate} disabled={loadingDaily} className="flex items-center gap-2 px-6 py-3 rounded-full text-sm font-bold disabled:opacity-50" style={{ background: 'var(--bg-card)', border: '1px solid var(--bg-card-border)' }}>
                         <RefreshCw className={`w-4 h-4 ${loadingDaily ? 'animate-spin' : ''}`} /> Generate New
                       </motion.button>
                     </div>
@@ -242,12 +273,24 @@ export default function DashboardPage() {
                     <h3 className="text-xs font-semibold uppercase tracking-widest mb-6" style={{ color: 'var(--text-muted)' }}>Worship Details</h3>
                     <h2 className="text-2xl font-bold mb-1">{song.title}</h2>
                     <p className="font-medium text-lg mb-6" style={{ color: 'var(--text-muted)' }}>By {song.artist}</p>
+                    
+                    <div className="w-full rounded-2xl overflow-hidden mb-6" style={{ aspectRatio: '16/9', background: '#000' }}>
+                      <iframe 
+                        width="100%" 
+                        height="100%" 
+                        src={`https://www.youtube.com/embed?listType=search&list=${encodeURIComponent(song.title + ' ' + song.artist + ' worship')}`} 
+                        frameBorder="0" 
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                        allowFullScreen 
+                      />
+                    </div>
+
                     <div className="p-6 rounded-[2rem] mb-6" style={{ background: 'var(--bg-card)' }}>
                       <p className="text-xs font-bold uppercase mb-3 opacity-40">Theme: {song.theme}</p>
                       <p className="text-sm italic leading-relaxed whitespace-pre-wrap" style={{ color: 'var(--text-muted)' }}>{song.lyrics}</p>
                     </div>
                     <div className="flex justify-center">
-                      <motion.button whileTap={{ scale: 0.95 }} onClick={handleRegenerate} disabled={loadingDaily} className="flex items-center gap-2 px-6 py-3 rounded-2xl text-sm font-bold disabled:opacity-50" style={{ background: 'var(--bg-card)', border: '1px solid var(--bg-card-border)' }}>
+                      <motion.button whileTap={{ scale: 0.95 }} onClick={handleRegenerate} disabled={loadingDaily} className="flex items-center gap-2 px-6 py-3 rounded-full text-sm font-bold disabled:opacity-50" style={{ background: 'var(--bg-card)', border: '1px solid var(--bg-card-border)' }}>
                         <RefreshCw className={`w-4 h-4 ${loadingDaily ? 'animate-spin' : ''}`} /> Generate New
                       </motion.button>
                     </div>
