@@ -18,6 +18,9 @@ import StrongholdBusterPage from './pages/StrongholdBusterPage';
 import PrivacyPolicyPage from './pages/PrivacyPolicyPage';
 import SupportPage from './pages/SupportPage';
 import BugReportPage from './pages/BugReportPage';
+import FastingTrackerPage from './pages/FastingTrackerPage';
+import SmallGroupsPage from './pages/SmallGroupsPage';
+import SermonArchivePage from './pages/SermonArchivePage';
 
 /** Applies theme and font-size data attributes to <html> based on user profile */
 function ThemeApplier() {
@@ -71,6 +74,9 @@ function AppRoutes() {
       <Route path="/privacy" element={<PrivacyPolicyPage />} />
       <Route path="/support" element={<SupportPage />} />
       <Route path="/bug-report" element={<ProtectedRoute><BugReportPage /></ProtectedRoute>} />
+      <Route path="/fasting" element={<ProtectedRoute><FastingTrackerPage /></ProtectedRoute>} />
+      <Route path="/groups" element={<ProtectedRoute><SmallGroupsPage /></ProtectedRoute>} />
+      <Route path="/archives" element={<ProtectedRoute><SermonArchivePage /></ProtectedRoute>} />
     </Routes>
   );
 }

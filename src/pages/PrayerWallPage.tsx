@@ -203,12 +203,10 @@ export default function PrayerWallPage() {
                   whileTap={{ scale: 0.85 }}
                   onClick={() => handlePray(req.id)}
                   disabled={interactions.has(req.id)}
-                  className={`flex flex-col items-center gap-0.5 shrink-0 transition-all ${interactions.has(req.id) ? 'opacity-100' : 'opacity-50 hover:opacity-100'}`}
+                  className={`flex items-center gap-2 px-3 py-1.5 rounded-full border transition-all ${interactions.has(req.id) ? 'bg-red-500/10 border-red-500/20 text-red-400' : 'bg-[var(--bg-card)] border-[var(--bg-card-border)] opacity-60 hover:opacity-100 hover:border-red-500/30'}`}
                 >
-                  <Heart
-                    className={`w-5 h-5 transition-colors ${interactions.has(req.id) ? 'fill-red-400 text-red-400' : ''}`}
-                  />
-                  <span className="text-xs font-semibold">{req.prayed_count}</span>
+                  <Heart className={`w-4 h-4 ${interactions.has(req.id) ? 'fill-current' : ''}`} />
+                  <span className="text-xs font-bold">{interactions.has(req.id) ? 'Praying' : 'Pray'} • {req.prayed_count}</span>
                 </motion.button>
               </div>
             </motion.div>

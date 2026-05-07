@@ -116,6 +116,47 @@ export type Database = {
         }
         Relationships: []
       }
+      fasting_logs: {
+        Row: {
+          created_at: string | null
+          end_date: string | null
+          fast_type: string
+          id: string
+          notes: string | null
+          start_date: string
+          title: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          end_date?: string | null
+          fast_type: string
+          id?: string
+          notes?: string | null
+          start_date: string
+          title: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          end_date?: string | null
+          fast_type?: string
+          id?: string
+          notes?: string | null
+          start_date?: string
+          title?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fasting_logs_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       journal_entries: {
         Row: {
           content: string
@@ -239,6 +280,125 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      sermon_archives: {
+        Row: {
+          ai_notes: string | null
+          church_id: string | null
+          created_at: string | null
+          date: string
+          id: string
+          speaker: string | null
+          title: string
+          transcript: string | null
+        }
+        Insert: {
+          ai_notes?: string | null
+          church_id?: string | null
+          created_at?: string | null
+          date: string
+          id?: string
+          speaker?: string | null
+          title: string
+          transcript?: string | null
+        }
+        Update: {
+          ai_notes?: string | null
+          church_id?: string | null
+          created_at?: string | null
+          date?: string
+          id?: string
+          speaker?: string | null
+          title?: string
+          transcript?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sermon_archives_church_id_fkey"
+            columns: ["church_id"]
+            isOneToOne: false
+            referencedRelation: "churches"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      small_group_members: {
+        Row: {
+          group_id: string
+          joined_at: string | null
+          user_id: string
+        }
+        Insert: {
+          group_id: string
+          joined_at?: string | null
+          user_id: string
+        }
+        Update: {
+          group_id?: string
+          joined_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "small_group_members_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "small_groups"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "small_group_members_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      small_groups: {
+        Row: {
+          access_code: string
+          church_id: string | null
+          created_at: string | null
+          description: string | null
+          id: string
+          leader_id: string | null
+          name: string
+        }
+        Insert: {
+          access_code: string
+          church_id?: string | null
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          leader_id?: string | null
+          name: string
+        }
+        Update: {
+          access_code?: string
+          church_id?: string | null
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          leader_id?: string | null
+          name?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "small_groups_church_id_fkey"
+            columns: ["church_id"]
+            isOneToOne: false
+            referencedRelation: "churches"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "small_groups_leader_id_fkey"
+            columns: ["leader_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       profiles: {
         Row: {

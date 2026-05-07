@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { Link } from 'react-router-dom';
-import { BookOpen, MessageCircle, Music, LogOut, Settings, X, RefreshCw, BookMarked, Search, Wind, Heart, BookOpenCheck, Mic, Sparkles, ListChecks, Shield, Plus, Download } from 'lucide-react';
+import { BookOpen, MessageCircle, Music, LogOut, Settings, X, RefreshCw, BookMarked, Search, Wind, Heart, BookOpenCheck, Mic, Sparkles, ListChecks, Shield, Plus, Download, Clock, Users, Archive } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '../lib/supabase';
 import { getDailyIndex, PRAYER_GUIDES } from '../data/spiritualData';
@@ -391,7 +391,8 @@ export default function DashboardPage() {
             <ToolCard to="/scripture" icon={Search} title="Scripture" desc="Look up any passage" delay={0.32} />
             <ToolCard to="/breath" icon={Wind} title="Breath Prayer" desc="A moment of stillness" delay={0.33} />
             <ToolCard to="/devotional" icon={Sparkles} title="Devotional" desc="AI-personalised today" delay={0.34} />
-            <ToolCard to="/stronghold" icon={Shield} title="Stronghold Buster" desc="Overcome struggles" delay={0.35} span="col-span-2" />
+            <ToolCard to="/stronghold" icon={Shield} title="Stronghold Buster" desc="Overcome struggles" delay={0.35} />
+            <ToolCard to="/fasting" icon={Clock} title="Fasting Tracker" desc="Log your spiritual fasts" delay={0.36} />
           </motion.div>
         </div>
 
@@ -453,11 +454,13 @@ export default function DashboardPage() {
         {/* Community & Church tools */}
         <div>
           <p className="text-xs font-semibold uppercase tracking-widest mb-3" style={{ color: 'var(--text-muted)' }}>Community & Church</p>
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
             <ToolCard to="/prayer-wall" icon={Heart} title="Prayer Wall" desc="Pray for others" delay={0.5} />
             <ToolCard to="/plans" icon={ListChecks} title="Reading Plans" desc="Structured Bible study" delay={0.52} />
             <ToolCard to="/sermon-notes" icon={BookOpenCheck} title="Sermon Notes" desc="Structured note-taking" delay={0.54} />
             <ToolCard to="/sermon-live" icon={Mic} title="Live Tools" desc="Subtitles & AI notes" delay={0.56} />
+            <ToolCard to="/groups" icon={Users} title="Small Groups" desc="Join a local group" delay={0.58} />
+            <ToolCard to="/archives" icon={Archive} title="Sermon Archive" desc="Past messages" delay={0.60} />
           </div>
         </div>
 
