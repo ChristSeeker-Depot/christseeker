@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowLeft, Save, BookOpenCheck, ChevronDown, ChevronUp, Trash2, Loader2, PlusCircle } from 'lucide-react';
+import { ArrowLeft, Save, BookOpenCheck, ChevronDown, ChevronUp, Trash2, Loader2, PlusCircle, Sparkles } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
@@ -14,7 +14,7 @@ interface SermonNote {
 }
 
 export default function SermonNotesPage() {
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
   const [notes, setNotes] = useState<SermonNote[]>([]);
   const [expanded, setExpanded] = useState<string | null>(null);
   const [showForm, setShowForm] = useState(false);
@@ -25,6 +25,10 @@ export default function SermonNotesPage() {
   const [mainNotes, setMainNotes] = useState('');
   const [application, setApplication] = useState('');
 
+  // Co-Pilot state
+  const [copilotSuggestions, setCopilotSuggestions] = useState<string[]>([]);
+  const [copilotLoading, setCopilotLoading] = useState(false);
+
   const fetchNotes = async () => {
     if (!user) return;
     const { data } = await supabase.from('journal_entries').select('*').eq('user_id', user.id).eq('entry_type', 'sermon_note').order('created_at', { ascending: false });
@@ -33,6 +37,42 @@ export default function SermonNotesPage() {
   };
 
   useEffect(() => { fetchNotes(); }, [user]);
+
+  // AI Co-Pilot Debounce Logic
+  useEffect(() => {
+    if (!mainNotes || mainNotes.length < 30) {
+      setCopilotSuggestions([]);
+      return;
+    }
+
+    const timer = setTimeout(async () => {
+      setCopilotLoading(true);
+      try {
+        const { data, error } = await supabase.functions.invoke('chat', {
+          body: {
+            message: `Analyze this sermon note snippet and provide 2 relevant scripture references or short theological themes. Note snippet: "${mainNotes}". Return exactly as a valid JSON array of strings (e.g., ["John 3:16 - God's love", "Theme: Redemption"]). Do not include markdown formatting outside the array.`,
+            history: [],
+            denomination: profile?.denomination || 'Non-Denominational',
+            mode: 'sermon_copilot',
+          },
+        });
+        if (!error && data?.reply) {
+          let jsonStr = data.reply;
+          if (jsonStr.startsWith('```')) {
+            jsonStr = jsonStr.replace(/^```json\n?/, '').replace(/```$/, '').trim();
+          }
+          const parsed = JSON.parse(jsonStr);
+          if (Array.isArray(parsed)) setCopilotSuggestions(parsed);
+        }
+      } catch (err) {
+        console.error('Co-pilot error:', err);
+      } finally {
+        setCopilotLoading(false);
+      }
+    }, 2000);
+
+    return () => clearTimeout(timer);
+  }, [mainNotes, profile]);
 
   const handleSave = async () => {
     if (!mainNotes.trim() || !user) return;
@@ -46,6 +86,7 @@ export default function SermonNotesPage() {
       metadata: { speaker, passages, application },
     });
     setSpeaker(''); setPassages(''); setMainNotes(''); setApplication('');
+    setCopilotSuggestions([]);
     setShowForm(false);
     fetchNotes();
     setSaving(false);
@@ -75,11 +116,40 @@ export default function SermonNotesPage() {
         {showForm && (
           <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} className="glass-panel p-6 rounded-3xl mb-6 overflow-hidden">
             <h2 className="font-bold mb-4 flex items-center gap-2"><BookOpenCheck className="w-5 h-5" style={{ color: 'var(--accent)' }} /> Today's Sermon</h2>
-            <div className="space-y-4">
+            <div className="space-y-4 relative">
               <div><label className="text-xs font-semibold uppercase tracking-widest mb-1 block" style={{ color: 'var(--text-muted)' }}>Speaker</label><input value={speaker} onChange={e => setSpeaker(e.target.value)} placeholder="e.g. Pastor David" className={inputClass} style={inputStyle} /></div>
               <div><label className="text-xs font-semibold uppercase tracking-widest mb-1 block" style={{ color: 'var(--text-muted)' }}>Key Passages</label><input value={passages} onChange={e => setPassages(e.target.value)} placeholder="e.g. John 15:1-8, Romans 8:28" className={inputClass} style={inputStyle} /></div>
-              <div><label className="text-xs font-semibold uppercase tracking-widest mb-1 block" style={{ color: 'var(--text-muted)' }}>Main Notes</label><textarea value={mainNotes} onChange={e => setMainNotes(e.target.value)} placeholder="Key message today..." rows={5} className="w-full px-4 py-3 rounded-xl text-sm resize-none focus:outline-none focus:ring-2 transition-all" style={inputStyle} /></div>
-              <div><label className="text-xs font-semibold uppercase tracking-widest mb-1 block" style={{ color: 'var(--text-muted)' }}>How will I apply this week?</label><textarea value={application} onChange={e => setApplication(e.target.value)} placeholder="One practical step..." rows={3} className="w-full px-4 py-3 rounded-xl text-sm resize-none focus:outline-none focus:ring-2 transition-all" style={inputStyle} /></div>
+              
+              <div>
+                <label className="text-xs font-semibold uppercase tracking-widest mb-1 flex items-center justify-between" style={{ color: 'var(--text-muted)' }}>
+                  Main Notes
+                  {copilotLoading && <Loader2 className="w-3 h-3 animate-spin opacity-50" />}
+                </label>
+                <div className="relative">
+                  <textarea value={mainNotes} onChange={e => setMainNotes(e.target.value)} placeholder="Key message today..." rows={5} className="w-full px-4 py-3 rounded-xl text-sm resize-none focus:outline-none focus:ring-2 transition-all" style={inputStyle} />
+                  
+                  {/* AI Co-Pilot Suggestion Box */}
+                  <AnimatePresence>
+                    {copilotSuggestions.length > 0 && (
+                      <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 10 }} className="absolute -bottom-2 translate-y-full left-0 right-0 z-10 glass-panel p-3 rounded-xl border border-[var(--accent)]/30 shadow-xl" style={{ background: 'var(--bg-primary)' }}>
+                        <div className="flex items-center gap-1.5 mb-2 text-[var(--accent)]">
+                          <Sparkles className="w-3.5 h-3.5" />
+                          <span className="text-[10px] font-bold uppercase tracking-widest">AI Co-Pilot Suggestions</span>
+                        </div>
+                        <ul className="space-y-1.5">
+                          {copilotSuggestions.map((sug, idx) => (
+                            <li key={idx} className="text-xs opacity-80 flex items-start gap-2 leading-tight">
+                              <span className="text-[var(--accent)] mt-0.5">•</span> {sug}
+                            </li>
+                          ))}
+                        </ul>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+              </div>
+              
+              <div className={copilotSuggestions.length > 0 ? "pt-16 transition-all" : "transition-all"}><label className="text-xs font-semibold uppercase tracking-widest mb-1 block" style={{ color: 'var(--text-muted)' }}>How will I apply this week?</label><textarea value={application} onChange={e => setApplication(e.target.value)} placeholder="One practical step..." rows={3} className="w-full px-4 py-3 rounded-xl text-sm resize-none focus:outline-none focus:ring-2 transition-all" style={inputStyle} /></div>
               <motion.button whileTap={{ scale: 0.96 }} onClick={handleSave} disabled={!mainNotes.trim() || saving} className="w-full py-3 rounded-xl text-white font-medium flex items-center justify-center gap-2 disabled:opacity-50" style={{ background: 'var(--accent)' }}>
                 {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />} {saving ? 'Saving...' : 'Save Notes'}
               </motion.button>

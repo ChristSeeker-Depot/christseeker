@@ -21,6 +21,7 @@ import BugReportPage from './pages/BugReportPage';
 import FastingTrackerPage from './pages/FastingTrackerPage';
 import SmallGroupsPage from './pages/SmallGroupsPage';
 import SermonArchivePage from './pages/SermonArchivePage';
+import AdminDashboardPage from './pages/AdminDashboardPage';
 
 /** Applies theme and font-size data attributes to <html> based on user profile */
 function ThemeApplier() {
@@ -77,6 +78,7 @@ function AppRoutes() {
       <Route path="/fasting" element={<ProtectedRoute><FastingTrackerPage /></ProtectedRoute>} />
       <Route path="/groups" element={<ProtectedRoute><SmallGroupsPage /></ProtectedRoute>} />
       <Route path="/archives" element={<ProtectedRoute><SermonArchivePage /></ProtectedRoute>} />
+      <Route path="/admin" element={<ProtectedRoute><AdminDashboardPage /></ProtectedRoute>} />
     </Routes>
   );
 }

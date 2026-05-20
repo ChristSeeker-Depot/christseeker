@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowLeft, Heart, PlusCircle, Loader2, Send, X, Lock } from 'lucide-react';
+import { ArrowLeft, Heart, PlusCircle, Loader2, Send, X, Lock, AlertTriangle } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
@@ -13,6 +13,7 @@ interface PrayerRequest {
   created_at: string;
   display_name: string | null;
   user_id: string;
+  is_urgent?: boolean;
 }
 
 interface PrayerInteraction {
@@ -27,12 +28,14 @@ export default function PrayerWallPage() {
   const [showForm, setShowForm] = useState(false);
   const [content, setContent] = useState('');
   const [isAnonymous, setIsAnonymous] = useState(false);
+  const [isUrgent, setIsUrgent] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
   const fetchRequests = useCallback(async () => {
     const { data, error } = await supabase
       .from('prayer_requests')
       .select('*')
+      .order('is_urgent', { ascending: false, nullsFirst: false })
       .order('created_at', { ascending: false })
       .limit(50);
     if (!error && data) setRequests(data as PrayerRequest[]);
@@ -82,11 +85,13 @@ export default function PrayerWallPage() {
     const { error } = await supabase.from('prayer_requests').insert({
       content: content.trim(),
       is_anonymous: isAnonymous,
+      is_urgent: isUrgent,
       display_name: isAnonymous ? null : (profile?.display_name ?? null),
       user_id: user.id,
     });
     if (!error) {
       setContent('');
+      setIsUrgent(false);
       setShowForm(false);
       fetchRequests();
     }
@@ -147,15 +152,26 @@ export default function PrayerWallPage() {
                 className="w-full px-4 py-3 rounded-xl text-sm resize-none focus:outline-none focus:ring-2 mb-4 transition-all"
                 style={{ background: 'var(--bg-card)', border: '1px solid var(--bg-card-border)', color: 'var(--text-primary)' }}
               />
-              <label className="flex items-center gap-3 mb-5 cursor-pointer select-none">
-                <div
-                  onClick={() => setIsAnonymous(a => !a)}
-                  className={`w-11 h-6 rounded-full relative transition-colors ${isAnonymous ? 'bg-[var(--accent)]' : 'bg-gray-300'}`}
-                >
-                  <div className={`absolute top-1 w-4 h-4 bg-white rounded-full shadow transition-transform ${isAnonymous ? 'translate-x-6' : 'translate-x-1'}`} />
-                </div>
-                <span className="text-sm flex items-center gap-1.5"><Lock className="w-3.5 h-3.5 opacity-60" /> Post anonymously</span>
-              </label>
+              <div className="space-y-4 mb-6">
+                <label className="flex items-center gap-3 cursor-pointer select-none">
+                  <div
+                    onClick={() => setIsAnonymous(a => !a)}
+                    className={`w-11 h-6 rounded-full relative transition-colors ${isAnonymous ? 'bg-[var(--accent)]' : 'bg-gray-300'}`}
+                  >
+                    <div className={`absolute top-1 w-4 h-4 bg-white rounded-full shadow transition-transform ${isAnonymous ? 'translate-x-6' : 'translate-x-1'}`} />
+                  </div>
+                  <span className="text-sm flex items-center gap-1.5"><Lock className="w-3.5 h-3.5 opacity-60" /> Post anonymously</span>
+                </label>
+                <label className="flex items-center gap-3 cursor-pointer select-none">
+                  <div
+                    onClick={() => setIsUrgent(a => !a)}
+                    className={`w-11 h-6 rounded-full relative transition-colors ${isUrgent ? 'bg-red-500' : 'bg-gray-300'}`}
+                  >
+                    <div className={`absolute top-1 w-4 h-4 bg-white rounded-full shadow transition-transform ${isUrgent ? 'translate-x-6' : 'translate-x-1'}`} />
+                  </div>
+                  <span className={`text-sm flex items-center gap-1.5 font-bold ${isUrgent ? 'text-red-500' : 'opacity-60'}`}><AlertTriangle className="w-3.5 h-3.5" /> Mark as Urgent Emergency</span>
+                </label>
+              </div>
               <motion.button
                 whileTap={{ scale: 0.96 }}
                 onClick={handleSubmit}
@@ -186,16 +202,21 @@ export default function PrayerWallPage() {
               initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: i * 0.05 }}
-              className="glass-panel p-5 rounded-2xl"
+              className={`glass-panel p-5 rounded-2xl border-2 transition-all ${req.is_urgent ? 'border-red-500/50 shadow-[0_0_15px_rgba(239,68,68,0.2)]' : 'border-transparent'}`}
             >
               <div className="flex justify-between items-start gap-3">
                 <div className="flex-1">
-                  <div className="flex items-center gap-2 mb-2">
+                  <div className="flex items-center gap-2 mb-2 flex-wrap">
                     <span className="text-xs font-semibold" style={{ color: 'var(--text-muted)' }}>
                       {req.is_anonymous ? 'Anonymous' : (req.display_name ?? 'A Brother/Sister')}
                     </span>
                     <span className="text-xs opacity-30">·</span>
                     <span className="text-xs opacity-40">{timeAgo(req.created_at)}</span>
+                    {req.is_urgent && (
+                      <span className="text-[10px] uppercase tracking-wider font-bold bg-red-500/10 text-red-500 px-2 py-0.5 rounded-full flex items-center gap-1">
+                        <AlertTriangle className="w-3 h-3" /> Urgent
+                      </span>
+                    )}
                   </div>
                   <p className="text-sm leading-relaxed">{req.content}</p>
                 </div>

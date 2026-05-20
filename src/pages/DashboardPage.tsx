@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { Link } from 'react-router-dom';
-import { BookOpen, MessageCircle, Music, LogOut, Settings, X, RefreshCw, BookMarked, Search, Wind, Heart, BookOpenCheck, Mic, Sparkles, ListChecks, Shield, Plus, Download, Clock, Users, Archive } from 'lucide-react';
+import { BookOpen, MessageCircle, Music, LogOut, Settings, X, RefreshCw, BookMarked, Search, Wind, Heart, BookOpenCheck, Mic, Sparkles, ListChecks, Shield, Plus, Download, Clock, Users, Archive, CheckSquare, BarChart } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '../lib/supabase';
 import { getDailyIndex, PRAYER_GUIDES } from '../data/spiritualData';
@@ -33,6 +33,20 @@ export default function DashboardPage() {
   const [loadingDaily, setLoadingDaily] = useState(true);
   const verseRef = useRef<HTMLDivElement>(null);
   const [exporting, setExporting] = useState(false);
+  const [habits, setHabits] = useState({ read: false, pray: false, silence: false });
+
+  useEffect(() => {
+    const today = new Date().toISOString().split('T')[0];
+    const saved = localStorage.getItem(`habits_${today}`);
+    if (saved) setHabits(JSON.parse(saved));
+  }, []);
+
+  const toggleHabit = (key: keyof typeof habits) => {
+    const newHabits = { ...habits, [key]: !habits[key] };
+    setHabits(newHabits);
+    const today = new Date().toISOString().split('T')[0];
+    localStorage.setItem(`habits_${today}`, JSON.stringify(newHabits));
+  };
 
   const handleExport = async () => {
     if (!verseRef.current) return;
@@ -309,6 +323,7 @@ export default function DashboardPage() {
         </div>
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-1 px-3 py-1.5 rounded-full text-sm font-semibold glass-panel">🔥 {streak}</div>
+          {canManage && <Link to="/admin"><motion.div whileTap={{ scale: 0.90 }} className="p-2 opacity-70 hover:opacity-100 transition-opacity text-[var(--accent)]"><BarChart className="w-5 h-5" /></motion.div></Link>}
           <Link to="/support"><motion.div whileTap={{ scale: 0.90 }} className="p-2 bg-red-500/10 text-red-500 rounded-full hover:bg-red-500/20 transition-colors"><Heart className="w-5 h-5 fill-current" /></motion.div></Link>
           <Link to="/settings"><motion.div whileTap={{ scale: 0.90 }} className="p-2 opacity-70 hover:opacity-100 transition-opacity"><Settings className="w-5 h-5" /></motion.div></Link>
           <motion.button whileTap={{ scale: 0.90 }} onClick={signOut} className="p-2 opacity-70 hover:opacity-100 transition-opacity"><LogOut className="w-5 h-5" /></motion.button>
@@ -382,6 +397,23 @@ export default function DashboardPage() {
                 </div>
               </div>
               {!loadingDaily && song && <p className="text-xs hidden sm:block" style={{ color: 'var(--text-muted)' }}>Tap for lyrics</p>}
+            </div>
+          </motion.div>
+
+          {/* Daily Habit Tracker */}
+          <motion.div className="glass-panel p-6 rounded-3xl" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.28 }}>
+            <h3 className="text-xs font-semibold uppercase tracking-widest mb-4" style={{ color: 'var(--text-muted)' }}>Daily Disciplines</h3>
+            <div className="space-y-3">
+              {[
+                { key: 'read', label: 'Read the Word' },
+                { key: 'pray', label: 'Spent Time in Prayer' },
+                { key: 'silence', label: 'Silence & Solitude' }
+              ].map(habit => (
+                <div key={habit.key} onClick={() => toggleHabit(habit.key as keyof typeof habits)} className={`flex items-center gap-3 p-3 rounded-2xl cursor-pointer transition-all border ${habits[habit.key as keyof typeof habits] ? 'bg-[var(--accent)]/10 border-[var(--accent)]/30 text-[var(--accent)]' : 'bg-[var(--bg-card)] border-[var(--bg-card-border)] opacity-70 hover:opacity-100'}`}>
+                  <CheckSquare className={`w-5 h-5 ${habits[habit.key as keyof typeof habits] ? 'fill-current' : 'opacity-40'}`} />
+                  <span className={`text-sm font-bold ${habits[habit.key as keyof typeof habits] ? '' : 'text-[var(--text-primary)]'}`}>{habit.label}</span>
+                </div>
+              ))}
             </div>
           </motion.div>
 
