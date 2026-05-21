@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowLeft, Search, BookOpen, GraduationCap, Map, X, Loader2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { supabase } from '../lib/supabase';
+import { callAI, parseAIJson } from '../lib/ai';
 import { useAuth } from '../contexts/AuthContext';
 
 interface VerseResult {
@@ -56,22 +56,12 @@ export default function ScripturePage() {
 
     setAnalyzingWord(cleanWord);
     try {
-      const { data, error } = await supabase.functions.invoke('chat', {
-        body: {
-          message: `Analyze the word "${cleanWord}" in the context of ${result.reference}. Return valid JSON: {"original_word": "Greek/Hebrew word", "transliteration": "...", "strongs": "Strong's number", "definition": "Brief meaning", "commentary": "1-2 sentences of early church father context."}`,
-          history: [],
-          denomination: profile?.denomination || 'Non-Denominational',
-          mode: 'scholar_lookup',
-        },
+      const raw = await callAI({
+        message: `Analyze the word "${cleanWord}" in the context of ${result.reference}. Return valid JSON: {"original_word": "Greek/Hebrew word", "transliteration": "...", "strongs": "Strong's number", "definition": "Brief meaning", "commentary": "1-2 sentences of early church father context."}`,
+        denomination: profile?.denomination || 'Non-Denominational',
+        mode: 'scholar_lookup',
       });
-
-      if (!error && data?.reply) {
-        let jsonStr = data.reply;
-        if (jsonStr.startsWith('```')) {
-          jsonStr = jsonStr.replace(/^```json\n?/, '').replace(/```$/, '').trim();
-        }
-        setWordData(JSON.parse(jsonStr));
-      }
+      setWordData(parseAIJson(raw));
     } catch (err) {
       console.error(err);
     } finally {
@@ -83,19 +73,13 @@ export default function ScripturePage() {
     if (!result) return;
     setExtractingMap(true);
     try {
-      const { data, error } = await supabase.functions.invoke('chat', {
-        body: {
-          message: `Identify the primary historical city or region mentioned in this passage: "${result.text}". Return ONLY the name of the place (e.g., "Jerusalem", "Sea of Galilee"). If none, return "NONE".`,
-          history: [],
-          mode: 'extract_locations',
-        },
+      const raw = await callAI({
+        message: `Identify the primary historical city or region mentioned in this passage: "${result.text}". Return ONLY the name of the place (e.g., "Jerusalem", "Sea of Galilee"). If none, return "NONE".`,
+        mode: 'extract_locations',
       });
-
-      if (!error && data?.reply && data.reply !== 'NONE') {
-        setMapLocation(data.reply.trim());
-      } else {
-        alert("No historical locations found in this passage.");
-      }
+      const loc = raw.trim();
+      if (loc && loc !== 'NONE') setMapLocation(loc);
+      else alert('No historical locations found in this passage.');
     } catch (err) {
       console.error(err);
     } finally {

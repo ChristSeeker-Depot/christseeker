@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { ArrowLeft, Sparkles, Save, Loader2, BookOpen } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '../lib/supabase';
+import { callAI } from '../lib/ai';
 import { useAuth } from '../contexts/AuthContext';
 
 export default function DevotionalPage() {
@@ -30,9 +31,8 @@ export default function DevotionalPage() {
     setSaved(false);
 
     try {
-      const { data, error } = await supabase.functions.invoke('chat', {
-        body: {
-          message: `Create a personal devotional for someone who is experiencing: "${topic}". 
+      const reply = await callAI({
+        message: `Create a personal devotional for someone who is experiencing: "${topic}". 
 Format your response exactly as follows using markdown:
 **📖 Scripture**
 [A single, relevant Bible verse with reference]
@@ -42,13 +42,10 @@ Format your response exactly as follows using markdown:
 
 **✉️ A Prayer for Today**
 [A short, first-person prayer they can pray right now]`,
-          history: [],
-          denomination: profile?.denomination ?? 'Non-Denominational',
-          mode: 'devotional',
-        },
+        denomination: profile?.denomination ?? 'Non-Denominational',
+        mode: 'devotional',
       });
-      if (error || data?.error) throw new Error(data?.error || 'Could not generate devotional.');
-      setDevotional(data.reply);
+      setDevotional(reply);
     } catch (err: any) {
       setError(err.message || 'Something went wrong. Please try again.');
     } finally {

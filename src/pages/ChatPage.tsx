@@ -1,6 +1,7 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabase';
+import { callAI } from '../lib/ai';
 import { Link } from 'react-router-dom';
 import { ArrowLeft, Send, HeartHandshake, Trash2, Ghost } from 'lucide-react';
 import { motion } from 'framer-motion';
@@ -28,14 +29,14 @@ export default function ChatPage() {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
-  const loadMessages = async () => {
+  const loadMessages = useCallback(async () => {
     const { data } = await supabase
       .from('chat_messages')
       .select('*')
       .eq('user_id', user?.id)
       .order('created_at', { ascending: true });
     if (data) setMessages(data);
-  };
+  }, [user?.id]);
 
   const handleClearChat = async () => {
     if (!window.confirm("Are you sure you want to clear this chat? This cannot be undone.")) return;
@@ -77,17 +78,13 @@ export default function ChatPage() {
       }
 
       // Call Edge Function — cap history at last 20 messages to prevent context overflow
-      const { data, error } = await supabase.functions.invoke('chat', {
-        body: {
-          message: userMessage,
-          history: messages.slice(-20).map(m => ({ role: m.role, content: m.content })),
-          denomination: profile.denomination
-        }
+      const reply = await callAI({
+        message: userMessage,
+        history: messages.slice(-20).map(m => ({ role: m.role, content: m.content })),
+        denomination: profile.denomination,
       });
 
-      if (error) throw error;
-
-      const assistantMsgContent = data?.reply || "I am currently unable to reflect on this. Let us pray together in silence.";
+      const assistantMsgContent = reply;
       
       // Save AI message to DB if not incognito
       if (!isIncognito) {

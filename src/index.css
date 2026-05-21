@@ -123,3 +123,12 @@ html, body {
   background-color: var(--color-soft-blue);
   border-radius: 10px;
 }
+
+/* ── Utility classes to avoid repetitive inline styles ── */
+.text-primary  { color: var(--text-primary); }
+.text-muted    { color: var(--text-muted); }
+.bg-page       { background: var(--bg-primary); }
+.bg-card-fill  { background: var(--bg-card); }
+.border-card   { border: 1px solid var(--bg-card-border); }
+.text-accent   { color: var(--accent); }
+.bg-accent     { background: var(--accent); }

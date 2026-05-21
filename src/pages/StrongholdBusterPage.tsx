@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { ArrowLeft, Shield, ChevronRight, Loader2, Save } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '../lib/supabase';
+import { callAI } from '../lib/ai';
 import { useAuth } from '../contexts/AuthContext';
 
 type Stronghold = {
@@ -87,9 +88,8 @@ export default function StrongholdBusterPage() {
     setSaved(false);
 
     try {
-      const { data, error } = await supabase.functions.invoke('chat', {
-        body: {
-          message: `Create a "Stronghold Buster" guide for a Christian struggling to break free from: "${customTopic}". 
+      const responseText = await callAI({
+        message: `Create a "Stronghold Buster" guide for a Christian struggling to break free from: "${customTopic}". 
 Format your response exactly as follows using markdown:
 
 **🛑 The Lie**
@@ -104,16 +104,9 @@ Format your response exactly as follows using markdown:
 
 **🙏 Prayer of Breaking**
 [A passionate, first-person prayer of repentance, renunciation of the enemy's lies, and surrender to Jesus]`,
-          history: [],
-          denomination: profile?.denomination ?? 'Non-Denominational',
-          mode: 'devotional',
-        },
+        denomination: profile?.denomination ?? 'Non-Denominational',
+        mode: 'devotional',
       });
-      
-      if (error || data?.error) throw new Error(data?.error || 'Could not generate stronghold guide.');
-      
-      // Parse the markdown returned by Gemini into the Stronghold object shape
-      const responseText = data.reply as string;
       
       const lieMatch = responseText.match(/\*\*🛑 The Lie\*\*\n([\s\S]*?)\n\n\*\*🔥/);
       const declarationMatch = responseText.match(/\*\*🔥 Declaration\*\*\n([\s\S]*?)\n\n\*\*📖/);
@@ -142,7 +135,6 @@ Format your response exactly as follows using markdown:
         passages: passages.length > 0 ? passages : [{ref: '2 Corinthians 10:4', text: 'The weapons we fight with are not the weapons of the world. On the contrary, they have divine power to demolish strongholds.'}],
         prayer: prayerMatch ? prayerMatch[1].trim() : 'Lord, set me free. Amen.',
       });
-      
     } catch (err: any) {
       setError(err.message || 'Something went wrong. Please try again.');
     } finally {

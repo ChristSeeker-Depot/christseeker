@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import { BookOpen, MessageCircle, Music, LogOut, Settings, X, RefreshCw, BookMarked, Search, Wind, Heart, BookOpenCheck, Mic, Sparkles, ListChecks, Shield, Plus, Download, Clock, Users, Archive, CheckSquare, BarChart } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '../lib/supabase';
+import { callAI, parseAIJson } from '../lib/ai';
 import { getDailyIndex, PRAYER_GUIDES } from '../data/spiritualData';
 import TextToSpeech from '../components/TextToSpeech';
 import html2canvas from 'html2canvas';
@@ -97,25 +98,15 @@ export default function DashboardPage() {
     }
 
     try {
-      const { data, error } = await supabase.functions.invoke('chat', {
-        body: {
-          message: `Generate daily spiritual content. Pick a completely random Bible verse (from anywhere in the entire Bible) and a completely random Christian worship song (from any era). Provide the verse text in the ${translation} translation. Return ONLY a valid JSON object with this exact structure (no markdown): { "verse": { "text": "", "reference": "", "reflection": "" }, "song": { "title": "", "artist": "", "theme": "", "lyrics": "" } }`,
-          history: [],
-          denomination: profile?.denomination || 'Non-Denominational',
-          mode: 'devotional',
-        },
+      const raw = await callAI({
+        message: `Generate daily spiritual content. Pick a completely random Bible verse (from anywhere in the entire Bible) and a completely random Christian worship song (from any era). Provide the verse text in the ${translation} translation. Return ONLY a valid JSON object with this exact structure (no markdown): { "verse": { "text": "", "reference": "", "reflection": "" }, "song": { "title": "", "artist": "", "theme": "", "lyrics": "" } }`,
+        denomination: profile?.denomination || 'Non-Denominational',
+        mode: 'devotional',
       });
-
-      if (!error && data?.reply) {
-        let jsonStr = data.reply;
-        if (jsonStr.startsWith('```')) {
-          jsonStr = jsonStr.replace(/^```json\n?/, '').replace(/```$/, '').trim();
-        }
-        const parsed = JSON.parse(jsonStr);
-        setVerse(parsed.verse);
-        setSong(parsed.song);
-        localStorage.setItem(cacheKey, JSON.stringify(parsed));
-      }
+      const parsed = parseAIJson<{ verse: typeof verse; song: typeof song }>(raw);
+      setVerse(parsed.verse);
+      setSong(parsed.song);
+      localStorage.setItem(cacheKey, JSON.stringify(parsed));
     } catch (err) {
       console.error("Failed to fetch daily content", err);
       // Fallback

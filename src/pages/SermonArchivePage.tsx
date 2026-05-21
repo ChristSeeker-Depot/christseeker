@@ -1,8 +1,9 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowLeft, Archive, Loader2, Sparkles, Video } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '../lib/supabase';
+import { callAI, parseAIJson } from '../lib/ai';
 import { useAuth } from '../contexts/AuthContext';
 import DevotionalPlanModal from '../components/DevotionalPlanModal';
 
@@ -16,23 +17,24 @@ export default function SermonArchivePage() {
   const [generatingPlan, setGeneratingPlan] = useState(false);
   const [activePlan, setActivePlan] = useState<{sermonTitle: string, plan: any[]}|null>(null);
 
-  useEffect(() => {
-    const fetchSermons = async () => {
-      if (!profile?.church_id) {
-        setLoading(false);
-        return;
-      }
-      const { data } = await supabase
-        .from('sermon_archives')
-        .select('*')
-        .eq('church_id', profile.church_id)
-        .order('date', { ascending: false });
-        
-      if (data) setSermons(data);
+  const fetchSermons = useCallback(async () => {
+    if (!profile?.church_id) {
       setLoading(false);
-    };
-    fetchSermons();
+      return;
+    }
+    const { data } = await supabase
+      .from('sermon_archives')
+      .select('*')
+      .eq('church_id', profile.church_id)
+      .order('date', { ascending: false });
+      
+    if (data) setSermons(data);
+    setLoading(false);
   }, [profile?.church_id]);
+
+  useEffect(() => {
+    fetchSermons();
+  }, [fetchSermons]);
 
   const handleGeneratePlan = async (sermon: any) => {
     // Check local storage first
@@ -47,24 +49,14 @@ export default function SermonArchivePage() {
     setSelectedSermon(sermon);
 
     try {
-      const { data, error } = await supabase.functions.invoke('chat', {
-        body: {
-          message: `Create a 7-day personal devotional and actionable challenge based strictly on this sermon transcript: ${sermon.transcript || sermon.ai_notes || sermon.title}. Return ONLY valid JSON structured as an array of objects: [{ "day": 1, "scripture": "Reference", "reflection": "Reflection text", "action_item": "Actionable challenge" }]`,
-          history: [],
-          denomination: profile?.denomination || 'Non-Denominational',
-          mode: 'sermon_to_action',
-        },
+      const raw = await callAI({
+        message: `Create a 7-day personal devotional and actionable challenge based strictly on this sermon transcript: ${sermon.transcript || sermon.ai_notes || sermon.title}. Return ONLY valid JSON structured as an array of objects: [{ "day": 1, "scripture": "Reference", "reflection": "Reflection text", "action_item": "Actionable challenge" }]`,
+        denomination: profile?.denomination || 'Non-Denominational',
+        mode: 'sermon_to_action',
       });
-
-      if (!error && data?.reply) {
-        let jsonStr = data.reply;
-        if (jsonStr.startsWith('```')) {
-          jsonStr = jsonStr.replace(/^```json\n?/, '').replace(/```$/, '').trim();
-        }
-        const parsed = JSON.parse(jsonStr);
-        localStorage.setItem(cacheKey, JSON.stringify(parsed));
-        setActivePlan({ sermonTitle: sermon.title, plan: parsed });
-      }
+      const parsed = parseAIJson<any[]>(raw);
+      localStorage.setItem(cacheKey, JSON.stringify(parsed));
+      setActivePlan({ sermonTitle: sermon.title, plan: parsed });
     } catch (err) {
       console.error("Failed to generate plan", err);
       // Fallback dummy data if AI fails

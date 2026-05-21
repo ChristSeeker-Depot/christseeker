@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowLeft, Clock, Plus, Loader2, Square, History } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -16,7 +16,7 @@ export default function FastingTrackerPage() {
   const [fastType, setFastType] = useState('Water');
   const [notes, setNotes] = useState('');
 
-  const fetchFasts = async () => {
+  const fetchFasts = useCallback(async () => {
     if (!user) return;
     const { data } = await supabase
       .from('fasting_logs')
@@ -26,15 +26,15 @@ export default function FastingTrackerPage() {
     
     if (data) {
       setFasts(data);
-      const active = data.find(f => !f.end_date);
+      const active = data.find((f: any) => !f.end_date);
       setActiveFast(active || null);
     }
     setLoading(false);
-  };
+  }, [user?.id]);
 
   useEffect(() => {
     fetchFasts();
-  }, [user]);
+  }, [fetchFasts]);
 
   const handleStartFast = async () => {
     if (!user || !title) return;

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Link, Navigate } from 'react-router-dom';
 import { ArrowLeft, BarChart, Heart, Users, Activity, ShieldAlert, Loader2 } from 'lucide-react';
 import { motion } from 'framer-motion';
@@ -15,50 +15,36 @@ export default function AdminDashboardPage() {
     totalInteractions: 0
   });
 
+  const fetchStats = useCallback(async () => {
+    try {
+      const oneWeekAgo = new Date();
+      oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+      
+      const [{ count: totalPrayers }, { count: urgentPrayers }, { count: activeFasts }, { count: totalInteractions }] = await Promise.all([
+        supabase.from('prayer_requests').select('*', { count: 'exact', head: true }).gte('created_at', oneWeekAgo.toISOString()),
+        supabase.from('prayer_requests').select('*', { count: 'exact', head: true }).eq('is_urgent', true),
+        supabase.from('fasting_logs').select('*', { count: 'exact', head: true }).is('end_time', null),
+        supabase.from('prayer_interactions').select('*', { count: 'exact', head: true }).gte('created_at', oneWeekAgo.toISOString()),
+      ]);
+
+      setStats({
+        totalPrayers: totalPrayers || 0,
+        urgentPrayers: urgentPrayers || 0,
+        activeFasts: activeFasts || 0,
+        totalInteractions: totalInteractions || 0
+      });
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
   useEffect(() => {
-    const fetchStats = async () => {
-      try {
-        // Fetch prayers this week
-        const oneWeekAgo = new Date();
-        oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
-        
-        const { count: totalPrayers } = await supabase
-          .from('prayer_requests')
-          .select('*', { count: 'exact', head: true })
-          .gte('created_at', oneWeekAgo.toISOString());
-
-        const { count: urgentPrayers } = await supabase
-          .from('prayer_requests')
-          .select('*', { count: 'exact', head: true })
-          .eq('is_urgent', true);
-
-        const { count: activeFasts } = await supabase
-          .from('fasting_logs')
-          .select('*', { count: 'exact', head: true })
-          .is('end_time', null);
-
-        const { count: totalInteractions } = await supabase
-          .from('prayer_interactions')
-          .select('*', { count: 'exact', head: true })
-          .gte('created_at', oneWeekAgo.toISOString());
-
-        setStats({
-          totalPrayers: totalPrayers || 0,
-          urgentPrayers: urgentPrayers || 0,
-          activeFasts: activeFasts || 0,
-          totalInteractions: totalInteractions || 0
-        });
-      } catch (err) {
-        console.error(err);
-      } finally {
-        setLoading(false);
-      }
-    };
-    
     if (profile?.role === 'admin' || profile?.role === 'leader') {
       fetchStats();
     }
-  }, [profile]);
+  }, [profile?.role, fetchStats]);
 
   if (!profile || (profile.role !== 'admin' && profile.role !== 'leader')) {
     return <Navigate to="/" />;

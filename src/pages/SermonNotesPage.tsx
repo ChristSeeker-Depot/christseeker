@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { ArrowLeft, Save, BookOpenCheck, ChevronDown, ChevronUp, Trash2, Loader2, PlusCircle, Sparkles } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '../lib/supabase';
+import { callAI, parseAIJson } from '../lib/ai';
 import { useAuth } from '../contexts/AuthContext';
 
 interface SermonNote {
@@ -48,22 +49,13 @@ export default function SermonNotesPage() {
     const timer = setTimeout(async () => {
       setCopilotLoading(true);
       try {
-        const { data, error } = await supabase.functions.invoke('chat', {
-          body: {
-            message: `Analyze this sermon note snippet and provide 2 relevant scripture references or short theological themes. Note snippet: "${mainNotes}". Return exactly as a valid JSON array of strings (e.g., ["John 3:16 - God's love", "Theme: Redemption"]). Do not include markdown formatting outside the array.`,
-            history: [],
-            denomination: profile?.denomination || 'Non-Denominational',
-            mode: 'sermon_copilot',
-          },
+        const raw = await callAI({
+          message: `Analyze this sermon note snippet and provide 2 relevant scripture references or short theological themes. Note snippet: "${mainNotes}". Return exactly as a valid JSON array of strings (e.g., ["John 3:16 - God's love", "Theme: Redemption"]). Do not include markdown formatting outside the array.`,
+          denomination: profile?.denomination || 'Non-Denominational',
+          mode: 'sermon_copilot',
         });
-        if (!error && data?.reply) {
-          let jsonStr = data.reply;
-          if (jsonStr.startsWith('```')) {
-            jsonStr = jsonStr.replace(/^```json\n?/, '').replace(/```$/, '').trim();
-          }
-          const parsed = JSON.parse(jsonStr);
-          if (Array.isArray(parsed)) setCopilotSuggestions(parsed);
-        }
+        const parsed = parseAIJson<string[]>(raw);
+        if (Array.isArray(parsed)) setCopilotSuggestions(parsed);
       } catch (err) {
         console.error('Co-pilot error:', err);
       } finally {
