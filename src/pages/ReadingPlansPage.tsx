@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowLeft, BookOpen, CheckCircle2, Loader2, ChevronRight } from 'lucide-react';
+import { ArrowLeft, BookOpen, CheckCircle2, Loader2, ChevronRight, Trash2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
@@ -222,6 +222,12 @@ export default function ReadingPlansPage() {
     loadAll();
   };
 
+  const unenroll = async (upId: string) => {
+    if (!window.confirm('Remove this plan? Your progress will be lost.')) return;
+    await supabase.from('user_plans').delete().eq('id', upId);
+    setUserPlans(prev => prev.filter(u => u.id !== upId));
+  };
+
   const markComplete = async (up: UserPlan, day: number) => {
     const updated = [...new Set([...up.completed_days, day])];
     await supabase.from('user_plans').update({ completed_days: updated }).eq('id', up.id);
@@ -270,7 +276,10 @@ export default function ReadingPlansPage() {
                 <motion.div key={up.id} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="glass-panel p-5 rounded-2xl">
                   <div className="flex justify-between items-start mb-3">
                     <div><p className="font-bold">{up.plan.title}</p><p className="text-xs opacity-50 mt-0.5">Day {today} of {up.plan.duration_days}</p></div>
-                    <span className="text-sm font-semibold" style={{ color: 'var(--accent)' }}>{Math.round(progress)}%</span>
+                    <div className="flex items-center gap-3">
+                      <span className="text-sm font-semibold" style={{ color: 'var(--accent)' }}>{Math.round(progress)}%</span>
+                      <motion.button whileTap={{ scale: 0.9 }} onClick={() => unenroll(up.id)} className="p-1.5 text-red-400 opacity-40 hover:opacity-100 transition-opacity" title="Remove plan"><Trash2 className="w-4 h-4" /></motion.button>
+                    </div>
                   </div>
                   <div className="h-1.5 rounded-full mb-4" style={{ background: 'var(--bg-card)' }}>
                     <div className="h-1.5 rounded-full transition-all" style={{ width: `${progress}%`, background: 'var(--accent)' }} />

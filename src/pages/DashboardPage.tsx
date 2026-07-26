@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { Link } from 'react-router-dom';
-import { BookOpen, MessageCircle, Music, LogOut, Settings, X, RefreshCw, BookMarked, Search, Wind, Heart, BookOpenCheck, Mic, Sparkles, ListChecks, Shield, Plus, Download, Clock, Users, Archive, CheckSquare, BarChart } from 'lucide-react';
+import { BookOpen, MessageCircle, Music, LogOut, Settings, X, RefreshCw, BookMarked, Search, Wind, Heart, BookOpenCheck, Mic, Sparkles, ListChecks, Shield, Plus, Download, Clock, Users, Archive, CheckSquare, BarChart, BookHeart, Moon, Landmark } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '../lib/supabase';
 import { callAI, parseAIJson } from '../lib/ai';
@@ -35,12 +35,42 @@ export default function DashboardPage() {
   const verseRef = useRef<HTMLDivElement>(null);
   const [exporting, setExporting] = useState(false);
   const [habits, setHabits] = useState({ read: false, pray: false, silence: false });
+  const [streakMilestone, setStreakMilestone] = useState<number | null>(null);
+
+  // Prayer Deck
+  const [prayerDeck, setPrayerDeck] = useState<{ id: string; content: string; display_name: string | null; is_urgent?: boolean; is_anonymous?: boolean }[]>([]);
+  const [prayerDeckPrayed, setPrayerDeckPrayed] = useState<Set<string>>(new Set());
+
+  useEffect(() => {
+    const fetchDeck = async () => {
+      const { data } = await supabase
+        .from('prayer_requests')
+        .select('id, content, display_name, is_urgent, is_answered, is_anonymous')
+        .eq('is_answered', false)
+        .order('is_urgent', { ascending: false })
+        .order('created_at', { ascending: false })
+        .limit(5);
+      if (data) setPrayerDeck(data as any[]);
+    };
+    fetchDeck();
+  }, []);
 
   useEffect(() => {
     const today = new Date().toISOString().split('T')[0];
     const saved = localStorage.getItem(`habits_${today}`);
     if (saved) setHabits(JSON.parse(saved));
-  }, []);
+    // Check streak milestone
+    const lastMilestone = localStorage.getItem('cs_last_milestone');
+    const currentStreak = profile?.streak ?? 0;
+    const milestones = [7, 30, 100];
+    for (const m of milestones) {
+      if (currentStreak >= m && lastMilestone !== String(m)) {
+        setStreakMilestone(m);
+        localStorage.setItem('cs_last_milestone', String(m));
+        break;
+      }
+    }
+  }, [profile]);
 
   const toggleHabit = (key: keyof typeof habits) => {
     const newHabits = { ...habits, [key]: !habits[key] };
@@ -199,6 +229,33 @@ export default function DashboardPage() {
 
   return (
     <div className="max-w-4xl mx-auto p-6 min-h-screen relative" style={{ color: 'var(--text-primary)', background: 'var(--bg-primary)' }}>
+      {/* Streak Milestone Celebration */}
+      <AnimatePresence>
+        {streakMilestone && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[200] flex items-center justify-center p-4 backdrop-blur-md"
+            style={{ background: 'rgba(0,0,0,0.7)' }} onClick={() => setStreakMilestone(null)}>
+            <motion.div initial={{ scale: 0.7, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.7, opacity: 0 }}
+              transition={{ type: 'spring', stiffness: 300, damping: 20 }}
+              onClick={e => e.stopPropagation()}
+              className="w-full max-w-sm rounded-[2.5rem] p-10 text-center shadow-2xl"
+              style={{ background: 'var(--bg-primary)', border: '2px solid var(--accent)' }}>
+              <div className="text-6xl mb-4">🔥</div>
+              <h2 className="text-3xl font-bold mb-2">{streakMilestone} Day Streak!</h2>
+              <p className="opacity-60 mb-2 text-sm">
+                {streakMilestone === 7 ? '"His mercies are new every morning." — Lamentations 3:23' :
+                 streakMilestone === 30 ? '"Blessed is the one who perseveres..." — James 1:12' :
+                 '"Well done, good and faithful servant." — Matthew 25:21'}
+              </p>
+              <p className="font-semibold text-[var(--accent)] mb-8">Keep seeking His face. 🙏</p>
+              <motion.button whileTap={{ scale: 0.95 }} onClick={() => setStreakMilestone(null)}
+                className="w-full py-3 rounded-2xl text-white font-bold"
+                style={{ background: 'var(--accent)' }}>Continue</motion.button>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* Modals - Moved to top for z-index priority */}
       <AnimatePresence>
         {(modalContent || showAddModal) && (
@@ -366,13 +423,14 @@ export default function DashboardPage() {
             <p className="text-sm" style={{ color: 'var(--text-muted)' }}>{prayerGuide?.text}</p>
           </motion.div>
 
-          {/* Today's Worship */}
-          <motion.div className={`glass-panel p-6 rounded-3xl border-2 border-transparent transition-all ${!loadingDaily && song ? 'cursor-pointer hover:border-[var(--accent)]/20' : ''}`}
-            initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }}
-            whileTap={!loadingDaily && song ? { scale: 0.98 } : {}} onClick={() => !loadingDaily && song && setModalContent('song')}>
-            <div className="flex items-center justify-between">
+          {/* Today's Worship + Daily Disciplines — equal-height 2-col grid */}
+          <div className="grid grid-cols-2 gap-5 items-stretch">
+            {/* Today's Worship */}
+            <motion.div className={`glass-panel p-6 rounded-3xl border-2 border-transparent transition-all h-full flex flex-col justify-between ${!loadingDaily && song ? 'cursor-pointer hover:border-[var(--accent)]/20' : ''}`}
+              initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }}
+              whileTap={!loadingDaily && song ? { scale: 0.98 } : {}} onClick={() => !loadingDaily && song && setModalContent('song')}>
               <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-full flex items-center justify-center" style={{ background: 'var(--bg-card)', border: '1px solid var(--bg-card-border)' }}>
+                <div className="w-12 h-12 rounded-full flex items-center justify-center shrink-0" style={{ background: 'var(--bg-card)', border: '1px solid var(--bg-card-border)' }}>
                   {loadingDaily ? <RefreshCw className="w-5 h-5 animate-spin" style={{ color: 'var(--accent)' }} /> : <Music className="w-5 h-5" style={{ color: 'var(--accent)' }} />}
                 </div>
                 <div>
@@ -387,28 +445,27 @@ export default function DashboardPage() {
                   )}
                 </div>
               </div>
-              {!loadingDaily && song && <p className="text-xs hidden sm:block" style={{ color: 'var(--text-muted)' }}>Tap for lyrics</p>}
-            </div>
-          </motion.div>
+              {!loadingDaily && song && <p className="text-xs mt-auto pt-4" style={{ color: 'var(--text-muted)' }}>Tap for lyrics & video</p>}
+            </motion.div>
 
-          {/* Daily Habit Tracker */}
-          <motion.div className="glass-panel p-6 rounded-3xl" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.28 }}>
-            <h3 className="text-xs font-semibold uppercase tracking-widest mb-4" style={{ color: 'var(--text-muted)' }}>Daily Disciplines</h3>
-            <div className="space-y-3">
-              {[
-                { key: 'read', label: 'Read the Word' },
-                { key: 'pray', label: 'Spent Time in Prayer' },
-                { key: 'silence', label: 'Silence & Solitude' }
-              ].map(habit => (
-                <div key={habit.key} onClick={() => toggleHabit(habit.key as keyof typeof habits)} className={`flex items-center gap-3 p-3 rounded-2xl cursor-pointer transition-all border ${habits[habit.key as keyof typeof habits] ? 'bg-[var(--accent)]/10 border-[var(--accent)]/30 text-[var(--accent)]' : 'bg-[var(--bg-card)] border-[var(--bg-card-border)] opacity-70 hover:opacity-100'}`}>
-                  <CheckSquare className={`w-5 h-5 ${habits[habit.key as keyof typeof habits] ? 'fill-current' : 'opacity-40'}`} />
-                  <span className={`text-sm font-bold ${habits[habit.key as keyof typeof habits] ? '' : 'text-[var(--text-primary)]'}`}>{habit.label}</span>
-                </div>
-              ))}
-            </div>
-          </motion.div>
+            {/* Daily Disciplines */}
+            <motion.div className="glass-panel p-6 rounded-3xl h-full" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.28 }}>
+              <h3 className="text-xs font-semibold uppercase tracking-widest mb-4" style={{ color: 'var(--text-muted)' }}>Daily Disciplines</h3>
+              <div className="space-y-3">
+                {[
+                  { key: 'read', label: 'Read the Word' },
+                  { key: 'pray', label: 'Spent Time in Prayer' },
+                  { key: 'silence', label: 'Silence & Solitude' }
+                ].map(habit => (
+                  <div key={habit.key} onClick={() => toggleHabit(habit.key as keyof typeof habits)} className={`flex items-center gap-3 p-3 rounded-2xl cursor-pointer transition-all border ${habits[habit.key as keyof typeof habits] ? 'bg-[var(--accent)]/10 border-[var(--accent)]/30 text-[var(--accent)]' : 'bg-[var(--bg-card)] border-[var(--bg-card-border)] opacity-70 hover:opacity-100'}`}>
+                    <CheckSquare className={`w-5 h-5 ${habits[habit.key as keyof typeof habits] ? 'fill-current' : 'opacity-40'}`} />
+                    <span className={`text-sm font-bold ${habits[habit.key as keyof typeof habits] ? '' : 'text-[var(--text-primary)]'}`}>{habit.label}</span>
+                  </div>
+                ))}
+              </div>
+            </motion.div>
+          </div>
 
-          {/* Tools Grid */}
           <motion.div className="grid grid-cols-2 gap-3" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
             <ToolCard to="/journal" icon={BookMarked} title="Prayer Journal" desc="Write your prayers" delay={0.31} />
             <ToolCard to="/scripture" icon={Search} title="Scripture" desc="Look up any passage" delay={0.32} />
@@ -416,7 +473,54 @@ export default function DashboardPage() {
             <ToolCard to="/devotional" icon={Sparkles} title="Devotional" desc="AI-personalised today" delay={0.34} />
             <ToolCard to="/stronghold" icon={Shield} title="Stronghold Buster" desc="Overcome struggles" delay={0.35} />
             <ToolCard to="/fasting" icon={Clock} title="Fasting Tracker" desc="Log your spiritual fasts" delay={0.36} />
+            <ToolCard to="/memorise" icon={BookHeart} title="Memorise" desc="Hide His Word in your heart" delay={0.37} />
+            <ToolCard to="/evening-examen" icon={Moon} title="Evening Examen" desc="End your day with God" delay={0.38} />
+            <ToolCard to="/creeds" icon={Landmark} title="Historic Creeds" desc="The faith once delivered" delay={0.39} />
           </motion.div>
+
+          {/* Prayer Deck */}
+          {prayerDeck.length > 0 && (
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}>
+              <div className="flex items-center justify-between mb-3">
+                <p className="text-xs font-semibold uppercase tracking-widest flex items-center gap-2" style={{ color: 'var(--text-muted)' }}>
+                  <Heart className="w-3.5 h-3.5" /> Prayer Deck
+                </p>
+                <p className="text-[10px] opacity-40">Swipe to intercede</p>
+              </div>
+              <div className="flex gap-3 overflow-x-auto pb-2 -mx-1 px-1" style={{ scrollbarWidth: 'none' }}>
+                {prayerDeck.map(req => (
+                  <motion.div
+                    key={req.id}
+                    whileTap={{ scale: 0.97 }}
+                    className="shrink-0 w-56 glass-panel p-4 rounded-2xl flex flex-col justify-between gap-3 border-2 transition-all"
+                    style={{ borderColor: req.is_urgent ? 'rgba(239,68,68,0.4)' : 'transparent' }}
+                  >
+                    <div>
+                      <p className="text-[10px] font-bold opacity-50 mb-1">{req.is_anonymous ? 'Anonymous' : (req.display_name ?? 'Community')}</p>
+                      <p className="text-xs leading-relaxed line-clamp-4">{req.content}</p>
+                    </div>
+                    <motion.button
+                      whileTap={{ scale: 0.9 }}
+                      onClick={() => {
+                        if (prayerDeckPrayed.has(req.id)) return;
+                        setPrayerDeckPrayed(prev => new Set([...prev, req.id]));
+                        supabase.from('prayer_interactions').insert({ request_id: req.id, user_id: undefined });
+                      }}
+                      className={`flex items-center justify-center gap-2 py-2 rounded-xl text-xs font-bold transition-all ${
+                        prayerDeckPrayed.has(req.id)
+                          ? 'bg-red-500/10 text-red-400'
+                          : 'text-white'
+                      }`}
+                      style={!prayerDeckPrayed.has(req.id) ? { background: 'var(--accent)' } : {}}
+                    >
+                      <Heart className={`w-3.5 h-3.5 ${prayerDeckPrayed.has(req.id) ? 'fill-current' : ''}`} />
+                      {prayerDeckPrayed.has(req.id) ? 'Prayed ✓' : 'Pray for this'}
+                    </motion.button>
+                  </motion.div>
+                ))}
+              </div>
+            </motion.div>
+          )}
         </div>
 
         {/* Church Life */}

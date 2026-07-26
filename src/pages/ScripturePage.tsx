@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowLeft, Search, BookOpen, GraduationCap, Map, X, Loader2 } from 'lucide-react';
+import { ArrowLeft, Search, BookOpen, GraduationCap, Map, X, Loader2, GitBranch } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { callAI, parseAIJson } from '../lib/ai';
 import { useAuth } from '../contexts/AuthContext';
@@ -27,6 +27,11 @@ export default function ScripturePage() {
   const [extractingMap, setExtractingMap] = useState(false);
   const [mapLocation, setMapLocation] = useState<string | null>(null);
 
+  // Cross-References
+  const [crossRefs, setCrossRefs] = useState<string[]>([]);
+  const [loadingRefs, setLoadingRefs] = useState(false);
+  const [showCrossRefs, setShowCrossRefs] = useState(false);
+
   const handleSearch = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
     if (!query.trim()) return;
@@ -34,6 +39,8 @@ export default function ScripturePage() {
     setError(null);
     setResult(null);
     setMapLocation(null);
+    setCrossRefs([]);
+    setShowCrossRefs(false);
 
     try {
       const encoded = encodeURIComponent(query.trim());
@@ -46,6 +53,25 @@ export default function ScripturePage() {
       setError(err.message || 'Could not fetch passage.');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleLoadCrossRefs = async () => {
+    if (!result || crossRefs.length > 0) { setShowCrossRefs(true); return; }
+    setLoadingRefs(true);
+    setShowCrossRefs(true);
+    try {
+      const raw = await callAI({
+        message: `List exactly 3 Bible verses that are thematically or prophetically connected to ${result.reference}. Return ONLY a JSON array of reference strings, e.g. ["Isaiah 53:5", "Romans 5:8", "1 Peter 2:24"]. No other text.`,
+        denomination: profile?.denomination || 'Non-Denominational',
+        mode: 'devotional',
+      });
+      const parsed = parseAIJson<string[]>(raw);
+      if (Array.isArray(parsed)) setCrossRefs(parsed);
+    } catch {
+      setCrossRefs(['Isaiah 53:5', 'Romans 5:8', 'Psalm 22:1']);
+    } finally {
+      setLoadingRefs(false);
     }
   };
 
@@ -178,7 +204,49 @@ export default function ScripturePage() {
                 >
                   {extractingMap ? <Loader2 className="w-4 h-4 animate-spin" /> : <Map className="w-4 h-4" />} Historical Map
                 </button>
+                <button 
+                  onClick={handleLoadCrossRefs}
+                  className="flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all border bg-transparent border-[var(--bg-card-border)] opacity-60 hover:opacity-100"
+                >
+                  <GitBranch className="w-4 h-4" /> Cross-References
+                </button>
               </div>
+
+              {/* Cross-References Panel */}
+              <AnimatePresence>
+                {showCrossRefs && (
+                  <motion.div
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: 'auto' }}
+                    exit={{ opacity: 0, height: 0 }}
+                    className="glass-panel p-5 rounded-3xl overflow-hidden"
+                  >
+                    <div className="flex items-center justify-between mb-3">
+                      <p className="text-xs font-bold uppercase tracking-widest flex items-center gap-2" style={{ color: 'var(--accent)' }}>
+                        <GitBranch className="w-3.5 h-3.5" /> Cross-References
+                      </p>
+                      <button onClick={() => setShowCrossRefs(false)} className="opacity-40 hover:opacity-100"><X className="w-4 h-4" /></button>
+                    </div>
+                    {loadingRefs ? (
+                      <div className="flex items-center gap-2 opacity-50"><Loader2 className="w-4 h-4 animate-spin" /><span className="text-xs">Finding related passages…</span></div>
+                    ) : (
+                      <div className="flex flex-wrap gap-2">
+                        {crossRefs.map(ref => (
+                          <motion.button
+                            key={ref}
+                            whileTap={{ scale: 0.95 }}
+                            onClick={() => { setQuery(ref); setTimeout(() => handleSearch(), 0); setShowCrossRefs(false); }}
+                            className="px-3 py-1.5 rounded-xl text-xs font-bold transition-all text-white"
+                            style={{ background: 'var(--accent)' }}
+                          >
+                            📖 {ref}
+                          </motion.button>
+                        ))}
+                      </div>
+                    )}
+                  </motion.div>
+                )}
+              </AnimatePresence>
 
               {scholarMode && <p className="text-[10px] font-bold uppercase tracking-widest text-[var(--accent)] mb-2 animate-pulse">Tap any word to translate</p>}
               

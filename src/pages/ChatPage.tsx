@@ -3,13 +3,39 @@ import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabase';
 import { callAI } from '../lib/ai';
 import { Link } from 'react-router-dom';
-import { ArrowLeft, Send, HeartHandshake, Trash2, Ghost } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { ArrowLeft, Send, HeartHandshake, Trash2, Ghost, Copy, Check } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 
 interface Message {
   id: string;
   role: 'user' | 'assistant';
   content: string;
+}
+
+const PROMPT_STARTERS = [
+  { label: '🕊️ Help me pray for anxiety', prompt: "I've been struggling with anxiety lately. Can you help me pray through this and share some scripture?" },
+  { label: '📖 Explain the Sermon on the Mount', prompt: 'Can you walk me through the Sermon on the Mount and what it means for daily life?' },
+  { label: '🤝 What does the Bible say about forgiveness?', prompt: "I'm finding it hard to forgive someone who hurt me. What does the Bible say about forgiveness?" },
+  { label: '✝️ Who is the Holy Spirit?', prompt: "Can you help me understand who the Holy Spirit is and how He works in a Christian's life?" },
+];
+
+function CopyButton({ text }: { text: string }) {
+  const [copied, setCopied] = useState(false);
+  const handleCopy = () => {
+    navigator.clipboard.writeText(text);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+  return (
+    <motion.button
+      whileTap={{ scale: 0.85 }}
+      onClick={handleCopy}
+      className="mt-2 flex items-center gap-1 text-[10px] opacity-30 hover:opacity-70 transition-opacity"
+    >
+      {copied ? <Check className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
+      {copied ? 'Copied' : 'Copy'}
+    </motion.button>
+  );
 }
 
 export default function ChatPage() {
@@ -48,63 +74,45 @@ export default function ChatPage() {
     }
   };
 
-  const handleSend = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!input.trim() || !user || !profile) return;
-
-    const userMessage = input.trim();
+  const handleSend = async (text?: string) => {
+    const userMessage = (text ?? input).trim();
+    if (!userMessage || !user || !profile) return;
     setInput('');
     setLoading(true);
 
-    // Optimistic UI
     const newUserMsg: Message = { id: crypto.randomUUID(), role: 'user', content: userMessage };
     setMessages(prev => [...prev, newUserMsg]);
 
     try {
-      // Save user message to DB if not incognito
       if (!isIncognito) {
-        await supabase.from('chat_messages').insert([{
-          user_id: user.id,
-          role: 'user',
-          content: userMessage
-        }]);
+        await supabase.from('chat_messages').insert([{ user_id: user.id, role: 'user', content: userMessage }]);
       }
 
-      // Detect crisis words for Samaritan prompt
       const crisisKeywords = ['suicide', 'kill myself', 'end it all', 'want to die', 'self harm'];
-      const isCrisis = crisisKeywords.some(kw => userMessage.toLowerCase().includes(kw));
-      if (isCrisis) {
-        setShowSamaritans(true);
-      }
+      if (crisisKeywords.some(kw => userMessage.toLowerCase().includes(kw))) setShowSamaritans(true);
 
-      // Call Edge Function — cap history at last 20 messages to prevent context overflow
       const reply = await callAI({
         message: userMessage,
         history: messages.slice(-20).map(m => ({ role: m.role, content: m.content })),
         denomination: profile.denomination,
       });
 
-      const assistantMsgContent = reply;
-      
-      // Save AI message to DB if not incognito
       if (!isIncognito) {
-        await supabase.from('chat_messages').insert([{
-          user_id: user.id,
-          role: 'assistant',
-          content: assistantMsgContent
-        }]);
+        await supabase.from('chat_messages').insert([{ user_id: user.id, role: 'assistant', content: reply }]);
       }
 
-      const newAssistantMsg: Message = { id: crypto.randomUUID(), role: 'assistant', content: assistantMsgContent };
-      setMessages(prev => [...prev, newAssistantMsg]);
-
+      setMessages(prev => [...prev, { id: crypto.randomUUID(), role: 'assistant', content: reply }]);
     } catch (err) {
       console.error('Chat error:', err);
-      // Fallback message
       setMessages(prev => [...prev, { id: crypto.randomUUID(), role: 'assistant', content: "I'm having trouble connecting right now, my friend. Please hold on." }]);
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleFormSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    handleSend();
   };
 
   return (
@@ -140,38 +148,57 @@ export default function ChatPage() {
       </header>
 
       {!isIncognito && (
-        <div className="bg-[#E3EBF3]/30 border border-[#E3EBF3]/50 p-3 rounded-xl mb-6 shrink-0 animate-fade-in text-xs opacity-75 text-[#2D3436]">
+        <div className="bg-[#E3EBF3]/30 border border-[#E3EBF3]/50 p-3 rounded-xl mb-4 shrink-0 animate-fade-in text-xs opacity-75 text-[#2D3436]">
           ChristSeeker is a tool to help you explore Scripture and tradition. It is a 'Knowledgeable Peer' designed to point you back to the Word, your local church, and your own prayer life. It is not a substitute for the Holy Spirit or the wisdom of a human pastor.
         </div>
       )}
       
       {isIncognito && (
-        <div className="bg-indigo-900/30 border border-indigo-500/30 p-3 rounded-xl mb-6 shrink-0 animate-fade-in text-xs text-indigo-200">
+        <div className="bg-indigo-900/30 border border-indigo-500/30 p-3 rounded-xl mb-4 shrink-0 animate-fade-in text-xs text-indigo-200">
           Incognito Mode is active. New messages will not be saved to your spiritual journal.
         </div>
       )}
 
-      {showSamaritans && (
-        <motion.div 
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="bg-red-50 border border-red-200 text-red-800 p-4 rounded-2xl mb-4 flex items-start gap-4 shrink-0"
-        >
-          <HeartHandshake className="w-6 h-6 mt-1" />
-          <div>
-            <h3 className="font-bold">You are not alone.</h3>
-            <p className="text-sm mt-1">If you are in deep distress, please reach out for immediate support. The Samaritans are available 24/7 in the UK.</p>
-            <p className="font-bold mt-2">Call: 111 (NHS) or 116 123 (Samaritans)</p>
-          </div>
-          <button onClick={() => setShowSamaritans(false)} className="ml-auto opacity-50 hover:opacity-100 text-xl">&times;</button>
-        </motion.div>
-      )}
+      <AnimatePresence>
+        {showSamaritans && (
+          <motion.div 
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="bg-red-50 border border-red-200 text-red-800 p-4 rounded-2xl mb-4 flex items-start gap-4 shrink-0"
+          >
+            <HeartHandshake className="w-6 h-6 mt-1" />
+            <div>
+              <h3 className="font-bold">You are not alone.</h3>
+              <p className="text-sm mt-1">If you are in deep distress, please reach out for immediate support. The Samaritans are available 24/7 in the UK.</p>
+              <p className="font-bold mt-2">Call: 111 (NHS) or 116 123 (Samaritans)</p>
+            </div>
+            <button onClick={() => setShowSamaritans(false)} className="ml-auto opacity-50 hover:opacity-100 text-xl">&times;</button>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       <div className="flex-1 overflow-y-auto custom-scrollbar space-y-6 pr-2 pb-4">
         {messages.length === 0 && (
-          <div className="h-full flex items-center justify-center text-center opacity-50 animate-fade-in">
-            <p>Grace and peace to you.<br/>How can we reflect together today?</p>
-          </div>
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="h-full flex flex-col items-center justify-center gap-6"
+          >
+            <p className="text-center opacity-50">Grace and peace to you.<br/>How can we reflect together today?</p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 w-full max-w-lg">
+              {PROMPT_STARTERS.map((starter) => (
+                <motion.button
+                  key={starter.label}
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.97 }}
+                  onClick={() => handleSend(starter.prompt)}
+                  className={`text-left p-4 rounded-2xl text-sm border transition-all ${isIncognito ? 'bg-[#2d2d2d] border-white/10 hover:border-indigo-500/40' : 'glass-panel border-[var(--bg-card-border)] hover:border-[var(--accent)]/30'}`}
+                >
+                  {starter.label}
+                </motion.button>
+              ))}
+            </div>
+          </motion.div>
         )}
         
         {messages.map((msg) => (
@@ -181,21 +208,20 @@ export default function ChatPage() {
             animate={{ opacity: 1, y: 0 }}
             className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
           >
-            <div className={`max-w-[85%] md:max-w-[75%] p-4 rounded-2xl ${
-              msg.role === 'user' 
-                ? `${isIncognito ? 'bg-indigo-600' : 'bg-[#2D3436]'} text-white rounded-br-sm` 
-                : `${isIncognito ? 'bg-[#2d2d2d]' : 'glass-panel'} rounded-bl-sm`
-            }`}>
-              <p className="text-sm md:text-base whitespace-pre-wrap leading-relaxed">{msg.content}</p>
+            <div className={`max-w-[85%] md:max-w-[75%] ${msg.role === 'user' ? '' : 'flex flex-col'}`}>
+              <div className={`p-4 rounded-2xl ${
+                msg.role === 'user' 
+                  ? `${isIncognito ? 'bg-indigo-600' : 'bg-[#2D3436]'} text-white rounded-br-sm` 
+                  : `${isIncognito ? 'bg-[#2d2d2d]' : 'glass-panel'} rounded-bl-sm`
+              }`}>
+                <p className="text-sm md:text-base whitespace-pre-wrap leading-relaxed">{msg.content}</p>
+              </div>
+              {msg.role === 'assistant' && <CopyButton text={msg.content} />}
             </div>
           </motion.div>
         ))}
         {loading && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="flex justify-start"
-          >
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex justify-start">
             <div className={`${isIncognito ? 'bg-[#2d2d2d]' : 'glass-panel'} p-4 rounded-2xl rounded-bl-sm flex gap-2`}>
               <span className={`w-2 h-2 ${isIncognito ? 'bg-indigo-400' : 'bg-[#2D3436]'} rounded-full animate-bounce`}></span>
               <span className={`w-2 h-2 ${isIncognito ? 'bg-indigo-400' : 'bg-[#2D3436]'} rounded-full animate-bounce`} style={{ animationDelay: '0.2s' }}></span>
@@ -206,7 +232,7 @@ export default function ChatPage() {
         <div ref={messagesEndRef} />
       </div>
 
-      <form onSubmit={handleSend} className="shrink-0 pt-4 animate-slide-in-bottom">
+      <form onSubmit={handleFormSubmit} className="shrink-0 pt-4 animate-slide-in-bottom">
         <div className="relative">
           <input
             type="text"

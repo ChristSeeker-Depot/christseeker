@@ -11,10 +11,17 @@ export default function FastingTrackerPage() {
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [activeFast, setActiveFast] = useState<any>(null);
+  const [now, setNow] = useState(Date.now());
 
   const [title, setTitle] = useState('');
   const [fastType, setFastType] = useState('Water');
   const [notes, setNotes] = useState('');
+
+  // Tick every minute so the live timer updates
+  useEffect(() => {
+    const timer = setInterval(() => setNow(Date.now()), 60000);
+    return () => clearInterval(timer);
+  }, []);
 
   const fetchFasts = useCallback(async () => {
     if (!user) return;
@@ -69,11 +76,14 @@ export default function FastingTrackerPage() {
 
   const calculateDuration = (start: string, end?: string) => {
     const s = new Date(start).getTime();
-    const e = end ? new Date(end).getTime() : Date.now();
-    const diffHours = Math.floor((e - s) / (1000 * 60 * 60));
+    const e = end ? new Date(end).getTime() : now;
+    const totalMins = Math.floor((e - s) / 60000);
+    const diffHours = Math.floor(totalMins / 60);
+    const diffMins = totalMins % 60;
     const diffDays = Math.floor(diffHours / 24);
-    if (diffDays > 0) return `${diffDays} days, ${diffHours % 24} hrs`;
-    return `${diffHours} hrs`;
+    if (diffDays > 0) return `${diffDays}d ${diffHours % 24}h ${diffMins}m`;
+    if (diffHours > 0) return `${diffHours}h ${diffMins}m`;
+    return `${diffMins}m`;
   };
 
   return (

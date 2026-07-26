@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowLeft, Heart, PlusCircle, Loader2, Send, X, Lock, AlertTriangle } from 'lucide-react';
+import { ArrowLeft, Heart, PlusCircle, Loader2, Send, X, Lock, AlertTriangle, CheckCircle2, User, Globe } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
@@ -14,11 +14,14 @@ interface PrayerRequest {
   display_name: string | null;
   user_id: string;
   is_urgent?: boolean;
+  is_answered?: boolean;
 }
 
 interface PrayerInteraction {
   request_id: string;
 }
+
+type Tab = 'all' | 'mine' | 'answered';
 
 export default function PrayerWallPage() {
   const { user, profile } = useAuth();
@@ -30,6 +33,8 @@ export default function PrayerWallPage() {
   const [isAnonymous, setIsAnonymous] = useState(false);
   const [isUrgent, setIsUrgent] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [activeTab, setActiveTab] = useState<Tab>('all');
+  const [markingAnswered, setMarkingAnswered] = useState<string | null>(null);
 
   const fetchRequests = useCallback(async () => {
     const { data, error } = await supabase
@@ -37,7 +42,7 @@ export default function PrayerWallPage() {
       .select('*')
       .order('is_urgent', { ascending: false, nullsFirst: false })
       .order('created_at', { ascending: false })
-      .limit(50);
+      .limit(100);
     if (!error && data) setRequests(data as PrayerRequest[]);
     setLoading(false);
   }, []);
@@ -55,7 +60,6 @@ export default function PrayerWallPage() {
     fetchRequests();
     fetchInteractions();
 
-    // Real-time subscription
     const channel = supabase
       .channel('prayer_wall')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'prayer_requests' }, () => {
@@ -67,16 +71,20 @@ export default function PrayerWallPage() {
   }, [fetchRequests, fetchInteractions]);
 
   const handlePray = async (requestId: string) => {
-    if (!user) return;
-    const alreadyPrayed = interactions.has(requestId);
-    if (alreadyPrayed) return;
-
-    // Optimistic update
+    if (!user || interactions.has(requestId)) return;
     setInteractions(prev => new Set([...prev, requestId]));
     setRequests(prev => prev.map(r => r.id === requestId ? { ...r, prayed_count: r.prayed_count + 1 } : r));
-
     await supabase.from('prayer_interactions').insert({ request_id: requestId, user_id: user.id });
     await supabase.rpc('increment_prayed_count', { request_id: requestId });
+  };
+
+  const handleMarkAnswered = async (req: PrayerRequest) => {
+    if (!user || req.user_id !== user.id) return;
+    setMarkingAnswered(req.id);
+    const newVal = !req.is_answered;
+    await supabase.from('prayer_requests').update({ is_answered: newVal }).eq('id', req.id);
+    setRequests(prev => prev.map(r => r.id === req.id ? { ...r, is_answered: newVal } : r));
+    setMarkingAnswered(null);
   };
 
   const handleSubmit = async () => {
@@ -108,9 +116,21 @@ export default function PrayerWallPage() {
     return `${Math.floor(h / 24)}d ago`;
   };
 
+  const filteredRequests = requests.filter(r => {
+    if (activeTab === 'mine') return r.user_id === user?.id;
+    if (activeTab === 'answered') return r.is_answered;
+    return !r.is_answered; // 'all' tab hides answered ones (they have their own tab)
+  });
+
+  const tabs: { id: Tab; label: string; icon: React.ReactNode }[] = [
+    { id: 'all', label: 'Community', icon: <Globe className="w-3.5 h-3.5" /> },
+    { id: 'mine', label: 'My Requests', icon: <User className="w-3.5 h-3.5" /> },
+    { id: 'answered', label: 'Answered 🙌', icon: <CheckCircle2 className="w-3.5 h-3.5" /> },
+  ];
+
   return (
     <div className="max-w-2xl mx-auto p-6 min-h-screen" style={{ color: 'var(--text-primary)', background: 'var(--bg-primary)' }}>
-      <header className="flex items-center justify-between mb-8">
+      <header className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-3">
           <Link to="/"><motion.div whileTap={{ scale: 0.9 }} className="p-2 opacity-70 hover:opacity-100"><ArrowLeft className="w-5 h-5" /></motion.div></Link>
           <h1 className="text-2xl font-bold">Prayer Wall</h1>
@@ -124,6 +144,19 @@ export default function PrayerWallPage() {
           <PlusCircle className="w-4 h-4" /> Add Request
         </motion.button>
       </header>
+
+      {/* Tabs */}
+      <div className="flex bg-[var(--bg-card)] rounded-xl p-1 mb-6 border border-[var(--bg-card-border)]">
+        {tabs.map(tab => (
+          <button
+            key={tab.id}
+            onClick={() => setActiveTab(tab.id)}
+            className={`flex-1 py-2 text-xs font-semibold rounded-lg transition-all flex items-center justify-center gap-1.5 ${activeTab === tab.id ? 'bg-[var(--bg-primary)] shadow-sm text-[var(--accent)]' : 'opacity-60'}`}
+          >
+            {tab.icon}{tab.label}
+          </button>
+        ))}
+      </div>
 
       {/* Submit Form Modal */}
       <AnimatePresence>
@@ -154,19 +187,13 @@ export default function PrayerWallPage() {
               />
               <div className="space-y-4 mb-6">
                 <label className="flex items-center gap-3 cursor-pointer select-none">
-                  <div
-                    onClick={() => setIsAnonymous(a => !a)}
-                    className={`w-11 h-6 rounded-full relative transition-colors ${isAnonymous ? 'bg-[var(--accent)]' : 'bg-gray-300'}`}
-                  >
+                  <div onClick={() => setIsAnonymous(a => !a)} className={`w-11 h-6 rounded-full relative transition-colors ${isAnonymous ? 'bg-[var(--accent)]' : 'bg-gray-300'}`}>
                     <div className={`absolute top-1 w-4 h-4 bg-white rounded-full shadow transition-transform ${isAnonymous ? 'translate-x-6' : 'translate-x-1'}`} />
                   </div>
                   <span className="text-sm flex items-center gap-1.5"><Lock className="w-3.5 h-3.5 opacity-60" /> Post anonymously</span>
                 </label>
                 <label className="flex items-center gap-3 cursor-pointer select-none">
-                  <div
-                    onClick={() => setIsUrgent(a => !a)}
-                    className={`w-11 h-6 rounded-full relative transition-colors ${isUrgent ? 'bg-red-500' : 'bg-gray-300'}`}
-                  >
+                  <div onClick={() => setIsUrgent(a => !a)} className={`w-11 h-6 rounded-full relative transition-colors ${isUrgent ? 'bg-red-500' : 'bg-gray-300'}`}>
                     <div className={`absolute top-1 w-4 h-4 bg-white rounded-full shadow transition-transform ${isUrgent ? 'translate-x-6' : 'translate-x-1'}`} />
                   </div>
                   <span className={`text-sm flex items-center gap-1.5 font-bold ${isUrgent ? 'text-red-500' : 'opacity-60'}`}><AlertTriangle className="w-3.5 h-3.5" /> Mark as Urgent Emergency</span>
@@ -189,20 +216,28 @@ export default function PrayerWallPage() {
 
       {loading ? (
         <div className="flex justify-center py-20"><Loader2 className="w-6 h-6 animate-spin opacity-40" /></div>
-      ) : requests.length === 0 ? (
+      ) : filteredRequests.length === 0 ? (
         <div className="text-center py-20 opacity-40">
           <Heart className="w-10 h-10 mx-auto mb-3" />
-          <p>No prayer requests yet.<br />Be the first to share.</p>
+          <p>
+            {activeTab === 'mine' ? 'You have no prayer requests yet.' :
+             activeTab === 'answered' ? 'No answered prayers yet — keep believing!' :
+             'No prayer requests yet.\nBe the first to share.'}
+          </p>
         </div>
       ) : (
         <div className="space-y-4">
-          {requests.map((req, i) => (
+          {filteredRequests.map((req, i) => (
             <motion.div
               key={req.id}
               initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: i * 0.05 }}
-              className={`glass-panel p-5 rounded-2xl border-2 transition-all ${req.is_urgent ? 'border-red-500/50 shadow-[0_0_15px_rgba(239,68,68,0.2)]' : 'border-transparent'}`}
+              transition={{ delay: i * 0.04 }}
+              className={`glass-panel p-5 rounded-2xl border-2 transition-all ${
+                req.is_answered ? 'border-emerald-500/40 shadow-[0_0_15px_rgba(52,211,153,0.1)]' :
+                req.is_urgent ? 'border-red-500/50 shadow-[0_0_15px_rgba(239,68,68,0.2)]' : 
+                'border-transparent'
+              }`}
             >
               <div className="flex justify-between items-start gap-3">
                 <div className="flex-1">
@@ -212,23 +247,43 @@ export default function PrayerWallPage() {
                     </span>
                     <span className="text-xs opacity-30">·</span>
                     <span className="text-xs opacity-40">{timeAgo(req.created_at)}</span>
-                    {req.is_urgent && (
+                    {req.is_urgent && !req.is_answered && (
                       <span className="text-[10px] uppercase tracking-wider font-bold bg-red-500/10 text-red-500 px-2 py-0.5 rounded-full flex items-center gap-1">
                         <AlertTriangle className="w-3 h-3" /> Urgent
+                      </span>
+                    )}
+                    {req.is_answered && (
+                      <span className="text-[10px] uppercase tracking-wider font-bold bg-emerald-500/10 text-emerald-500 px-2 py-0.5 rounded-full flex items-center gap-1">
+                        <CheckCircle2 className="w-3 h-3" /> Answered
                       </span>
                     )}
                   </div>
                   <p className="text-sm leading-relaxed">{req.content}</p>
                 </div>
-                <motion.button
-                  whileTap={{ scale: 0.85 }}
-                  onClick={() => handlePray(req.id)}
-                  disabled={interactions.has(req.id)}
-                  className={`flex items-center gap-2 px-3 py-1.5 rounded-full border transition-all ${interactions.has(req.id) ? 'bg-red-500/10 border-red-500/20 text-red-400' : 'bg-[var(--bg-card)] border-[var(--bg-card-border)] opacity-60 hover:opacity-100 hover:border-red-500/30'}`}
-                >
-                  <Heart className={`w-4 h-4 ${interactions.has(req.id) ? 'fill-current' : ''}`} />
-                  <span className="text-xs font-bold">{interactions.has(req.id) ? 'Praying' : 'Pray'} • {req.prayed_count}</span>
-                </motion.button>
+                <div className="flex flex-col items-end gap-2 shrink-0">
+                  <motion.button
+                    whileTap={{ scale: 0.85 }}
+                    onClick={() => handlePray(req.id)}
+                    disabled={interactions.has(req.id)}
+                    className={`flex items-center gap-2 px-3 py-1.5 rounded-full border transition-all ${interactions.has(req.id) ? 'bg-red-500/10 border-red-500/20 text-red-400' : 'bg-[var(--bg-card)] border-[var(--bg-card-border)] opacity-60 hover:opacity-100 hover:border-red-500/30'}`}
+                  >
+                    <Heart className={`w-4 h-4 ${interactions.has(req.id) ? 'fill-current' : ''}`} />
+                    <span className="text-xs font-bold">{interactions.has(req.id) ? 'Praying' : 'Pray'} · {req.prayed_count}</span>
+                  </motion.button>
+
+                  {/* Mark as answered — only shown to the owner */}
+                  {req.user_id === user?.id && (
+                    <motion.button
+                      whileTap={{ scale: 0.9 }}
+                      onClick={() => handleMarkAnswered(req)}
+                      disabled={markingAnswered === req.id}
+                      className={`flex items-center gap-1 text-[10px] font-bold px-2.5 py-1 rounded-full border transition-all ${req.is_answered ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-500' : 'opacity-40 hover:opacity-100 border-[var(--bg-card-border)]'}`}
+                    >
+                      <CheckCircle2 className="w-3 h-3" />
+                      {req.is_answered ? 'Answered!' : 'Mark answered'}
+                    </motion.button>
+                  )}
+                </div>
               </div>
             </motion.div>
           ))}

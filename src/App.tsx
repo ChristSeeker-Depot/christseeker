@@ -26,6 +26,9 @@ const FastingTrackerPage = lazy(() => import('./pages/FastingTrackerPage'));
 const SmallGroupsPage    = lazy(() => import('./pages/SmallGroupsPage'));
 const SermonArchivePage  = lazy(() => import('./pages/SermonArchivePage'));
 const AdminDashboardPage = lazy(() => import('./pages/AdminDashboardPage'));
+const MemoriseVersePage  = lazy(() => import('./pages/MemoriseVersePage'));
+const EveningExamenPage  = lazy(() => import('./pages/EveningExamenPage'));
+const CreedLibraryPage   = lazy(() => import('./pages/CreedLibraryPage'));
 
 /** Applies theme and font-size data attributes to <html> based on user profile */
 function ThemeApplier() {
@@ -93,6 +96,9 @@ function AppRoutes() {
         <Route path="/groups"       element={<ProtectedRoute><SmallGroupsPage /></ProtectedRoute>} />
         <Route path="/archives"     element={<ProtectedRoute><SermonArchivePage /></ProtectedRoute>} />
         <Route path="/admin"        element={<ProtectedRoute><AdminDashboardPage /></ProtectedRoute>} />
+        <Route path="/memorise"     element={<ProtectedRoute><MemoriseVersePage /></ProtectedRoute>} />
+        <Route path="/evening-examen" element={<ProtectedRoute><EveningExamenPage /></ProtectedRoute>} />
+        <Route path="/creeds"        element={<ProtectedRoute><CreedLibraryPage /></ProtectedRoute>} />
       </Routes>
     </Suspense>
   );

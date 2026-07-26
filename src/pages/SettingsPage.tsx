@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabase';
 import { Link, useNavigate } from 'react-router-dom';
-import { ArrowLeft, AlertTriangle, Sun, Moon, Scroll, Type, User, Plus, Users, Copy, Check, LogOut, ShieldCheck, BookOpen, UserCheck, Heart, Sliders, KeyRound } from 'lucide-react';
+import { ArrowLeft, AlertTriangle, Sun, Moon, Scroll, Type, User, Plus, Users, Copy, Check, LogOut, ShieldCheck, BookOpen, UserCheck, Heart, Sliders, KeyRound, Bell } from 'lucide-react';
 import { motion } from 'framer-motion';
 import type { UserProfile } from '../contexts/AuthContext';
 
@@ -65,6 +65,7 @@ export default function SettingsPage() {
   const [largeSubs, setLargeSubs] = useState(() => localStorage.getItem('cs_large_subs') === 'true');
   const [autoScroll, setAutoScroll] = useState(() => localStorage.getItem('cs_auto_scroll') !== 'false');
   const [confirmDisconnect, setConfirmDisconnect] = useState(() => localStorage.getItem('cs_confirm_disconnect') === 'true');
+  const [dailyReminder, setDailyReminder] = useState(() => localStorage.getItem('cs_daily_reminder') === 'true');
 
   const togglePref = (key: string, value: boolean, setter: (v: boolean) => void) => {
     localStorage.setItem(key, String(value));
@@ -593,6 +594,26 @@ export default function SettingsPage() {
                 </div>
               </div>
             ))}
+
+            {/* Daily Reminder */}
+            <div className="flex items-center justify-between gap-4 pt-4 border-t border-white/5">
+              <div>
+                <p className="text-sm font-medium flex items-center gap-2"><Bell className="w-4 h-4 opacity-60" /> Daily Reminder</p>
+                <p className="text-xs opacity-40">Browser notification to open ChristSeeker each day</p>
+              </div>
+              <div
+                onClick={async () => {
+                  if (!dailyReminder) {
+                    const perm = await Notification.requestPermission();
+                    if (perm !== 'granted') return;
+                  }
+                  togglePref('cs_daily_reminder', !dailyReminder, setDailyReminder);
+                }}
+                className={`w-9 h-5 rounded-full relative transition-colors shrink-0 cursor-pointer ${dailyReminder ? 'bg-[var(--accent)]' : 'bg-gray-300'}`}
+              >
+                <div className={`absolute top-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform ${dailyReminder ? 'translate-x-4' : 'translate-x-0.5'}`} />
+              </div>
+            </div>
           </div>
         </motion.div>
 
